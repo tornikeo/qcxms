@@ -1,0 +1,20 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "mesonSetupBuild",
+            "type": "shell",
+            "command": "meson setup build",
+            "problemMatcher": [],
+            "options": {"cwd": "${workspaceFolder}"}
+        },
+        {
+            "label": "ninjaBuild",
+            "type": "shell",
+            "command": "ninja -C build",
+            "options": {"cwd": "${workspaceFolder}"},
+            "dependsOn": ["mesonSetupBuild"],
+            "problemMatcher": []
+        }
+    ]
+}
