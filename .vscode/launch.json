@@ -1,6 +1,33 @@
 {
   "configurations": [
-  {
+    {
+      "name": "run-tmp1",
+      "type": "cppdbg",
+      "preLaunchTask": "ninjaBuild",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/qcxms",
+      "args": [
+        "--prod",
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/runs/current/TMPQCXMS/TMP.1",
+      "environment": [{"name":"OMP_NUM_THREADS", "value": "1"}],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Set Disassembly Flavor to Intel",
+          "text": "-gdb-set disassembly-flavor intel",
+          "ignoreFailures": true
+        }
+      ]
+    },
+    {
       "name": "gfortran launch",
       "type": "cppdbg",
       "preLaunchTask": "ninjaBuild",
@@ -16,17 +43,17 @@
       "externalConsole": false,
       "MIMode": "gdb",
       "setupCommands": [
-          {
-              "description": "Enable pretty-printing for gdb",
-              "text": "-enable-pretty-printing",
-              "ignoreFailures": true
-          },
-          {
-              "description": "Set Disassembly Flavor to Intel",
-              "text": "-gdb-set disassembly-flavor intel",
-              "ignoreFailures": true
-          }
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Set Disassembly Flavor to Intel",
+          "text": "-gdb-set disassembly-flavor intel",
+          "ignoreFailures": true
+        }
       ]
-  }
+    },
   ]
 }

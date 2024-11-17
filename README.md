@@ -3,23 +3,77 @@
 [![Latest Version](https://img.shields.io/github/v/release/qcxms/qcxms)](https://github.com/qcxms/QCxMS/releases/latest)
 [![DOI](https://img.shields.io/badge/DOI-10.1002%2Fanie.201300158%20-blue)](https://doi.org/10.1002/anie.201300158) [![DOI](https://img.shields.io/badge/DOI-10.1021%2Facsomega.9b02011%20-blue)](https://doi.org/10.1021/acsomega.9b02011)
 
-This is the download repository for the QCxMS program. 
+QCxMS simulates CID and EI mass spectra for given chemical structures, with semi-empirical tight-binding quantum chemistry methods.
 
-**Installation**
+**Building**
 
-### Binary 
-
-Statically linked binaries (Intel Compiler 21.3.0) can be found at the [latest release page](https://github.com/qcxms/QCxMS/releases/latest).
-
-Untar the zipped archive:
+1. Install `meson`,`ninja` and `gfortran`.
+2. Build:
 
 ```bash
-tar -xvzf QCxMS.vX.X.tar.xz
+meson setup build --reconfigure
+ninja -C build/
 ```
 
-The following files are being extracted: `qcxms` `pqcxms` `q-batch` `getres` `.XTBPARAM` `EXAMPLE`
+3. Link binaries:
 
-Place the executables into your ``$HOME/bin/`` directory or path. Place the `.XTBPARAM` folder and `.mass_raw.arg` file into your `$HOME` directory (these files can appear to be hidden). 
+```bash
+sudo ln -s $(pwd)/build/qcxms /usr/bin
+sudo ln -s $(pwd)/build/getres /usr/bin
+```
+
+4. Copy over [EXAMPLE/CID/Tetrahydrofuran](./EXAMPLE/CID/Tetrahydrofuran) contents and run qcxms there.
+`qcxms` will read two files there: coord, and qcxms.in, and generate many ground state (GS) molecules.
+
+```sh
+export XTBHOME="$(pwd)/.XTBHOME"
+mkdir -p runs/current
+cp -r EXAMPLE/CID/Tetrahydrofuran/* runs/current
+cd runs/current
+qcxms
+```
+
+the files `trjM` and `qcxms.gs` are generated here.
+
+5. Next, run qcxms once again in same directory. This will make a `TMPQCXMS` directory, with a LOT of `TMP.<num>` files under.
+
+```sh
+qcxms
+```
+
+Each of these `TMP.<num>` files are used as a "seed" for simulating one CID trajectory.
+
+6. Next, run:
+
+```sh
+pqcxms -j 3 -t 4
+```
+
+This runs `j` processes, each with `t` threads, with given starting `TMP` seeds.
+
+7. The run will take a while. 20-30 mins are OK for this molecule for example. To check progress, use `getres`
+
+```sh
+../../bin/getres
+```
+
+This outputs `223 runs done and written to tmpqcxms.res/out`. You will have 350 runs in total. In the meantime, grab a coffeee ☕.
+
+8. Now you can generate `results.csv`. If you don't want to wait fully, use
+
+```sh
+../../bin/plotms/plotms -f tmpqcxms_cid.res
+```
+
+OR , use 
+
+```sh
+../../bin/plotms/plotms -f qcxms_cid.res 
+```
+
+The latter is created even without using `getres`, after the pqcxms is done.
+
+9. Use `notes/view.ipynb` notebook to visualie resulting spectra. against a NIST reference for tetrahydrofuran.
 
 ### Conda
 

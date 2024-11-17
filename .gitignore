@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+# run files
+paper
+book
+runs
+build.log

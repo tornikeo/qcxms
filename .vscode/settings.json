@@ -1,6 +1,9 @@
 {
     "fortran.linter.includePaths": [
-        "/usr/include/**",
         "${workspaceFolder}/src/**",
-    ]
+    ],
+    "fortran.fortls.directories": [
+        "${workspaceFolder}/src/**",
+    ],
+    "jupyter.notebookFileRoot": "${workspaceFolder}",
 }

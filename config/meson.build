@@ -4,10 +4,15 @@ os = host_machine.system()
 fc = meson.get_compiler('fortran')
 fc_id = fc.get_id()
 
+message('Operating system: ' + os)
+message('Fortran compiler object: @0@'.format(fc))
+message('Fortran compiler ID: ' + fc_id)
+
 if fc_id == 'gcc'
   add_project_arguments(
     '-ffree-line-length-none',
     '-fbacktrace',
+    # '-fcheck=all',
     language: 'fortran',
   )
   if fc.version().version_compare('<8')

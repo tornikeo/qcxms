@@ -52,7 +52,8 @@ module qcxms_write_fragments
     real(wp) :: dtime
     real(wp) :: fragchrg(10)
     real(wp), allocatable :: norm_chrg(:)
-    real(wp), allocatable :: fragip (:,:), fragchrg2(:,:)
+    real(wp), allocatable :: fragip(:,:) 
+    real(wp), allocatable :: fragchrg2(:,:)
     real(wp), allocatable :: ip_diff(:,:),ip_diff2(:,:)
     real(wp), allocatable :: ip_ranking(:)
     real(wp), allocatable :: fragchrg3(:)
@@ -66,6 +67,12 @@ module qcxms_write_fragments
     character(len=120) :: asave
     character(len=80)  :: fragf(nuc)
 
+    ! TODO:
+    ! If this is removed, for some odd reason, the deallocate at L:459
+    ! will fail, due to "improper use of free()". Even checking 
+    ! for allocated, before deallocate doesn't fix this. Therefore,
+    ! this unconditional allocate is a workaround.
+    ! allocate ( fragip(1, 1), source=0.0_wp )
 
     l=0
     frag_number = 0
@@ -89,14 +96,27 @@ ok: if ( nfrag_ok ) then !only do the following if nfrags are reasonable
 
     nfrag=maxval(list)
 
-    allocate ( fragip(nfrag,  abs(mchrg)), fragchrg2(nfrag, abs(mchrg)) )
+    ! allocate ( fragip(10, 10), source=0.0_wp )
+    allocate ( fragip(nfrag,  abs(mchrg)), source=0.0_wp )
+    allocate ( fragchrg2(nfrag, abs(mchrg)) )
     allocate ( ip_diff(nfrag, abs(mchrg)) )
     allocate ( ip_diff2(nfrag,abs(mchrg)) )
     allocate ( fragchrg3(nfrag))
     allocate ( norm_chrg(nfrag))
 
-    write(*,'('' fragment assigment list:'',80i1)')(list(k),k=1,nuc)
+    ! TODO: 
+    ! dealloc at the end  
+    ! Assert the fragip is actually allocated
+    ! 
+    fragip(1,1) = 0.0_wp;
+    fragchrg2(1,1) = 0.0_wp;
+    ip_diff(1,1) = 0.0_wp;
+    ip_diff2(1,1) = 0.0_wp;
+    fragchrg3(1) = 0.0_wp;
 
+    write(*,'('' fragment assigment list:'',80i1)')(list(k),k=1,nuc)
+    print *, fragip
+    print *, size(fragip)
     !> compute fragment IP/EA per frag. and chrg.
     if ( method == 3 .and. .not. Temprun ) then ! fix average geometry for CID (axyz)
          call analyse(iprog,nuc,iat,iatf,axyz,list,nfrag,aTlast,fragip, mchrg, &
@@ -116,7 +136,7 @@ ok: if ( nfrag_ok ) then !only do the following if nfrags are reasonable
 fg: if ( nfrag > 1 ) then
 
       do i = 1, nfrag
-        fragip(i,0) = 0.0_wp
+        fragip(i,1) = 0.0_wp
         do j = 1, abs(mchrg)
           ip_diff(i,j) = fragip(i,j) - fragip(i,j-1)
 
@@ -444,11 +464,24 @@ CIDEI: if ( method == 3 ) then !.or. method == 4 ) then
 
     enddo loop
 
-    deallocate (fragip,     &
-                fragchrg2,  &
-                ip_diff,    &
-                ip_diff2,   &
-                fragchrg3 )
+
+    fragchrg2(1,1) = 0.0_wp;
+    ip_diff(1,1) = 0.0_wp;
+    ip_diff2(1,1) = 0.0_wp;
+    fragchrg3(1) = 0.0_wp;
+    fragip(1,1) = 0.0_wp;
+
+    deallocate (fragchrg2,)
+    deallocate (ip_diff,  )
+    deallocate (ip_diff2, )
+    deallocate (fragchrg3 )
+    deallocate (fragip,   )
+
+    ! deallocate (fragip,     &
+    !             fragchrg2,  &
+    !             ip_diff,    &
+    !             ip_diff2,   &
+    !             fragchrg3 )
 
     write(*,*)
 
