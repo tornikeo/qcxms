@@ -16,7 +16,7 @@ module qcxms_molecular_dynamics
   use common1
   use cidcommon
   use newcommon
-  use rmsd, only : get_rmsd
+  ! use rmsd, only : get_rmsd
   use qcxms_analyse, only: avg_frag_struc!, fragment_info 
   use qcxms_impact, only: impactscale
   use qcxms_iniqm, only: egrad

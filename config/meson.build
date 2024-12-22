@@ -10,8 +10,10 @@ message('Fortran compiler ID: ' + fc_id)
 
 if fc_id == 'gcc'
   add_project_arguments(
+    '-g', '-O0',
     '-ffree-line-length-none',
     '-fbacktrace',
+    # '-fimplicit-none',
     # '-fcheck=all',
     language: 'fortran',
   )
@@ -31,13 +33,13 @@ elif fc_id == 'intel'
     error('Intel version 19.1 or higher is required.')
   endif
 elif fc_id == 'pgi' or fc_id == 'nvidia_hpc'
-  add_project_arguments(
-    '-Mbackslash',
-    '-Mallocatable=03',
-    '-traceback',
-    language: 'fortran',
-  )
-  error('This project does not support compilation with NVHPC yet')
+  # add_project_arguments(
+  #   '-Mbackslash',
+  #   '-Mallocatable=03',
+  #   '-traceback',
+  #   language: 'fortran',
+  # )
+  # error('This project does not support compilation with NVHPC yet')
 endif
 
 if get_option('openmp')
