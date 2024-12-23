@@ -172,104 +172,103 @@ program QCxMS
    real(wp) :: mean, stddev
    real(wp) :: Tcheck
 
-!+*************************
+  !+*************************
 
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! Start the program
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! Start the program
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-! use/uncomments this piece of code for the lfc compiler which generates other system calls
-!     call execute_command_line('echo $SHELL > .tmpqcxms')
-!     open(unit=1,file='.tmpqcxms')
-!     read(1,'(a)')adum
-!     close(1,status='delete')
-!     if(index(adum,'tcsh') /= 0) shell=1
-!     if(index(adum,'bash') /= 0) shell=2
+  ! use/uncomments this piece of code for the lfc compiler which generates other system calls
+  !     call execute_command_line('echo $SHELL > .tmpqcxms')
+  !     open(unit=1,file='.tmpqcxms')
+  !     read(1,'(a)')adum
+  !     close(1,status='delete')
+  !     if(index(adum,'tcsh') /= 0) shell=1
+  !     if(index(adum,'bash') /= 0) shell=2
 
    call start_info
    shell=2
-!write(*,*)
-!write(*,*) 'Shell ',shell
-!write(*,*)
+  !write(*,*)
+  !write(*,*) 'Shell ',shell
+  !write(*,*)
 
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! some initialization:
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! some initialization:
 
-! MS method
-   method = 0
-! logical for too small fragments
-   small=.false.
-   littlemass=.false.
-! no checking of input etc
-   check=.false.
-! more infos
-   verbose = .false.
-! no production
-   prod   =.false.
-! no equilibration
-   noeq   =.true.
-! test calls
-   eonly  =.false.
-   eonly0 =.false.
-   eonly1 =.false.
-! uniform velocity scaling
-   unity=.false.
-! check if cid was OK
-   stopcid = .false.
-   starting_md=.false.
-   No_ESI = .false.
-! HS-UHF ini only for frag runs
-   iniok  =.true.
-! dump every dumpstep MD steps for MOLDEN movie (=4 fs as default)
-   dumpstep=4
-! counts the number of QC calls
-   calls=0
-! set scaling temp to 0
-   tscale = 0.0_wp
+  ! MS method
+  method = 0
+  ! logical for too small fragments
+  small=.false.
+  littlemass=.false.
+  ! no checking of input etc
+  check=.false.
+  ! more infos
+  verbose = .false.
+  ! no production
+  prod   =.false.
+  ! no equilibration
+  noeq   =.true.
+  ! test calls
+  eonly  =.false.
+  eonly0 =.false.
+  eonly1 =.false.
+  ! uniform velocity scaling
+  unity=.false.
+  ! check if cid was OK
+  stopcid = .false.
+  starting_md=.false.
+  No_ESI = .false.
+  ! HS-UHF ini only for frag runs
+  iniok  =.true.
+  ! dump every dumpstep MD steps for MOLDEN movie (=4 fs as default)
+  dumpstep=4
+  ! counts the number of QC calls
+  calls=0
+  ! set scaling temp to 0
+  tscale = 0.0_wp
 
-! GBSA Solvation Model
-!solvent='none'
-!gsolvstate=0
+  ! GBSA Solvation Model
+  !solvent='none'
+  !gsolvstate=0
 
-   new_velo = 0.0d0
-! total MD time including ion tracks
-   ttime=0
-   dtime = 0.0d0
-! undefined spin state
-   mspin=0
-! neutral M
-   mchrg=0
-! is fragmented?
-   fragstate=0
+  new_velo = 0.0d0
+  ! total MD time including ion tracks
+  ttime=0
+  dtime = 0.0d0
+  ! undefined spin state
+  mspin=0
+  ! neutral M
+  mchrg=0
+  ! is fragmented?
+  fragstate=0
 
-   t1 = 0.0_wp
-   t2 = 0.0_wp
-   w1 = 0.0_wp
-   w2 = 0.0_wp
+  t1 = 0.0_wp
+  t2 = 0.0_wp
+  w1 = 0.0_wp
+  w2 = 0.0_wp
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! R   E   A   D
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! Read the INPUT file
+  ! input, all defaults are set here
+  call input(tstep,tmax,ntraj,etemp_in,Tinit, mchrg_prod,           &
+  &          iee_a,iee_b,eimp0,eimpw,fimp,iprog,                            &
+  &          trelax,hacc,nfragexit,maxsec,edistri,btf,ieeatm,               &
+  &          scani,lowerbound,upperbound,                                   &
+  &          ELAB,ECOM,eExact,ECP,unity,noecp,nometal,                      &
+  &          vScale,CollNo,CollSec,ConstVelo,                               &
+  &          minmass,etempGS,coll,               &
+  &          MinPot,ESI,tempESI,No_ESI,NoScale,manual_dist,legacy)
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! R   E   A   D
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! Read the INPUT file
-! input, all defaults are set here
-   call input(tstep,tmax,ntraj,etemp_in,Tinit, mchrg_prod,           &
-   &          iee_a,iee_b,eimp0,eimpw,fimp,iprog,                            &
-   &          trelax,hacc,nfragexit,maxsec,edistri,btf,ieeatm,               &
-   &          scani,lowerbound,upperbound,                                   &
-   &          ELAB,ECOM,eExact,ECP,unity,noecp,nometal,                      &
-   &          vScale,CollNo,CollSec,ConstVelo,                               &
-   &          minmass,etempGS,coll,               &
-   &          MinPot,ESI,tempESI,No_ESI,NoScale,manual_dist,legacy)
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  call read_struc_commandline(mol, check, prod, noeq, eonly0, eonly1, eonly, inp_fname)
 
-
-   call read_struc_commandline(mol, check, prod, noeq, eonly0, eonly1, eonly, inp_fname)
-
-   nuc = mol%nat !      nuc : Number of atoms in molecule
+  nuc = mol%nat !      nuc : Number of atoms in molecule
 
 ! allocate memory for molecular properties
    allocate(xyz (3,nuc),      &
@@ -329,7 +328,7 @@ program QCxMS
          stop " -- Can't use no charge as input! Select charge! -- "
       endif
       write(*,'(14x,60(''*''))')
-!elseif (method  ==  4) then
+      !elseif (method  ==  4) then
 !   write(*,'(14x,60(''*''))')
 !   write(*,'(22x,'' Mode: Collision Induced Dissociation (CID)  '')')
 !        write(*,'(14x,60(''*''))')
@@ -370,13 +369,13 @@ program QCxMS
 
    call random_number(randx)
 
-! for GS every n steps a struc. is used later for production, i.e.
-! 100 fragmentation runs require about 5000 GS MD steps
-! this ensures uncorrelated fragmentations
+  ! for GS every n steps a struc. is used later for production, i.e.
+  ! 100 fragmentation runs require about 5000 GS MD steps
+  ! this ensures uncorrelated fragmentations
    nmax0 = ntraj * 50
 
 
-! Test etemp for CID - hardcoded for XTB for now
+  ! Test etemp for CID - hardcoded for XTB for now
    if (method == 3 .and. prod)then
       if(etemp_in <= 0)then
          betemp = 5000.0_wp
@@ -399,13 +398,13 @@ program QCxMS
 !endif
 
 ! timesteps in au
-   tstep = tstep * fstoau
+  tstep = tstep * fstoau
 
 ! the "70" eV in a.u. for EI
-   eimp0 = eimp0 * evtoau
+  eimp0 = eimp0 * evtoau
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! printing runtype information and chosen parameters
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! printing runtype information and chosen parameters
    call info_main(ntraj, tstep/fstoau, tmax, Tinit, trelax, eimp0*autoev, mchrg, &
       mchrg_prod, ieeatm, iee_a, iee_b, btf, fimp, hacc, ELAB, ECOM, coll%max_coll, &
       CollNo, CollSec, ESI, tempESI, etemp_in, maxsec, betemp, nfragexit, iprog, &
@@ -420,33 +419,33 @@ program QCxMS
       enddo
    endif
 
-! convert SV,SV(P),SVP,TZVP to same-size def2 basis set if ECP is on
-! for both orca and turbomole.
-   if ( prog == 2 .or. prog == 3 ) then
-      if ( ECP ) then
-         write(*,*)
-         write(*,*)'Found 5s-4d-5p/6s-5d-6p elements.'
-         write(*,*)'ECPs will be used!'
-         write(*,*)
-         if(bas == 1 .or. bas == 2 .or. bas == 3 .or. bas == 6)then
-            write(*,*) 'basis set is changed to def2-SV(P)'
-            bas = 9
-         elseif(bas == 4 .or. bas == 10)then
-            write(*,*) 'basis set is changed to def2-SVP'
-            bas = 10
-         elseif(bas == 5 .or. bas == 11 .or. bas == 12)then
-            write(*,*) 'basis set is changed to def2-TZVP'
-            bas = 11
-         endif
-      endif
-   endif
+  ! convert SV,SV(P),SVP,TZVP to same-size def2 basis set if ECP is on
+  ! for both orca and turbomole.
+  if ( prog == 2 .or. prog == 3 ) then
+    if ( ECP ) then
+        write(*,*)
+        write(*,*)'Found 5s-4d-5p/6s-5d-6p elements.'
+        write(*,*)'ECPs will be used!'
+        write(*,*)
+        if(bas == 1 .or. bas == 2 .or. bas == 3 .or. bas == 6)then
+          write(*,*) 'basis set is changed to def2-SV(P)'
+          bas = 9
+        elseif(bas == 4 .or. bas == 10)then
+          write(*,*) 'basis set is changed to def2-SVP'
+          bas = 10
+        elseif(bas == 5 .or. bas == 11 .or. bas == 12)then
+          write(*,*) 'basis set is changed to def2-TZVP'
+          bas = 11
+        endif
+    endif
+  endif
 
-! read file qcxms.in for isotopes: after keyword
-! isotope <atom number> <mass>  <atom number> <mass> <atom number> <mass> ...
-   call read_isotopes(nuc,imass)
+  ! read file qcxms.in for isotopes: after keyword
+  ! isotope <atom number> <mass>  <atom number> <mass> <atom number> <mass> ...
+  call read_isotopes(nuc,imass)
 
-! assign masses
-   call setmass(nuc,iat,mass,imass)
+  ! assign masses
+  call setmass(nuc,iat,mass,imass)
 
    if (.not.prod .and. verbose ) then
       write(*,*)
@@ -492,16 +491,12 @@ program QCxMS
       stop 'normal termination of QCxMS'
    endif
 
-
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-! skip if production runs are selected (parallel)
-   prun: if(.not.prod) then
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! skip if production runs are selected (parallel)
+  prun: if(.not.prod) then
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       ! Set the charge of the chosen method
       ! 0 = EI , 1 = CSC,  3 = CID
       if     (method  ==  0 ) then
@@ -510,16 +505,13 @@ program QCxMS
          mchrg = mchrg_prod
       endif
 
-
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!
-! neutral GS trajectory to generate many
-! different fragmentation trajectories
-! initial velo (uniform) distribution on all atoms
-!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      !
+      ! neutral GS trajectory to generate many
+      ! different fragmentation trajectories
+      ! initial velo (uniform) distribution on all atoms
+      !
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       inquire(file='qcxms.gs',exist=ex)
       GS: if(.not.ex)then
 
@@ -1105,18 +1097,16 @@ program QCxMS
       call version(2)
       write(*,*)
       stop ' --- normal termination of QCxMS --- '
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! END QCxMS set-up call (2)
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      ! END QCxMS set-up call (2)
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!
-!           do production runs
-!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   else !prun - if production run == .true.
-
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      !
+      !           do production runs
+      !
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  else !prun - if production run == .true.
       ! check whether methods are suitable with codes in input
       if ( method == 0 .and. mchrg < 0 ) then
          if ( prog == 0 ) then
@@ -1189,1193 +1179,1191 @@ program QCxMS
 
       open(file = res_name, newunit = io_res, status='replace')
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!                   !!!!!!!!!!      !!!!!!!!!!                  !!!!!!!!!!!
-!!!!!!!                   !!!!!!!!!!      !!!!!!!!!!                  !!!!!!!!!!!
-!!!!!!!                   !!!!!!!!!!      !!!!!!!!!!                  !!!!!!!!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!      !!!!!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!      !!!!!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!      !!!!!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!!!!      !!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!!!!      !!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!!!!      !!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!!!!      !!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!!!!      !!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!!!!      !!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!!!!      !!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!!!!      !!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!!!!      !!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!      !!!!!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!      !!!!!!!!
-!!!!!!!                   !!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!      !!!!!!!!
-!!!!!!!                   !!!!!!!!!!      !!!!!!!!!!                  !!!!!!!!!!!
-!!!!!!!                   !!!!!!!!!!      !!!!!!!!!!                  !!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! Initialize QM code for production runs
-! The cid module is called dependend on the number of collisions it
-! undergoes.
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! Go into CID module
-      mCID:if ( method == 3 ) then
-
-         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-         !set%tadd  = tadd !should be 0 anyway.
-         velof = 1.0_wp
-         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-         !> set charge
-         mchrg =  mchrg_prod
-
-         chrgcont  = real(mchrg,wp)
-
-         collisions = 0
-
-         edum = 0
-
-         !> Check if input (qcxms.in) makes sense
-         call cidcheck(coll%max_coll, CollNo, CollSec)
-
-
-         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-         ! Do ESI MD if ESI larger than 0
-         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-         noESI: if (.not. No_ESI )then
-
-            write(*,*) ''
-            write(*,*) '# ## ### ## # ## ### ## # ##'
-            write(*,*) '# ESI simulation turned ON #'
-            write(*,*) '# ## ### ## # ## ### ## # ##'
-            write(*,*) ''
-
-            !> get internal energy
-            call ekinet(nuc,velo,mass,edum,t)
-            edum = t * (0.5 * 3 * nuc *kB )
-            !>> starting energy
-            ENe(1) = edum * autoev
-
-            !>> scaling energy
-            ENe(2) = eimp * autoev
-
-            write(*,'('' Randomly Scaling internal energy: '')')
-            write(*,'(50(''-''))')
-            write(*,'('' Inner Energy before          : '', f14.6, a3)') ENe(1), ' eV'
-            write(*,'('' Temperature  before          : '', f14.6, a3)')      T, ' K'
-            write(*,'(50(''-''))')
-            write(*,'('' Wanted value Energy          : '', f7.4, a3)'  ) Ene(2), ' eV'
-            write(*,'(50(''-''))')
-
-
-            !>> scale depending on random number (or not, if value too low)
-            !edum = rand_int - edum
-            edum = ENe(2) - ENe(1)
-            if (edum > 0) then
-               E_Scale = Ene(2)
-            else
-               write(*,*) ' ! No Scaling ! '
-               E_Scale = 0.0_wp
-            endif
-
-            !> stop if both values were provided (to circumvent errors in input)
-            if ( tempESI > 0 .and. ESI > 0 ) stop 'Cannot provide both, Energy and Temp.!'
-
-            !> make sure nothing strange is scaled
-            if (E_Scale <= 0) E_Scale = 0
-
-            !> convert values for output
-            tScale = (E_Scale * 2.0d0/3.0d0) /(nuc * kB * autoev)
-            ENe(4) = tScale - t
-
-            if (tScale > 0) then
-               write(*,'('' Scaling to Temperature       : '', f14.6,a3)') tScale,' K'
-               write(*,*) ' '
-            endif
-
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            ! Do the ESI pre-MD to scale to the energy given
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            doESI:  if ( E_Scale > 0 ) then
-
-               ESI_loop: do
-                  isec = isec + 1
-
-                  write(*,*)'Trajectory: ', itrj
-                  write(*,'(/,80(''=''))')
-                  write(*,*)'Heating  trajectory            ',isec
-                  write(*,'(80(''=''),/)')
-
-                  if ( verbose ) then
-                     write(*,*)'initial Cartesian coordinates:'
-
-                     do i=1,nuc
-                        write(*,'(i3,3f10.5,4x,a2,f10.3)')&
-                        &  i,xyz(1,i),xyz(2,i),xyz(3,i),to_symbol(iat(i)),mass(i)/amutoau
-                     enddo
-                  endif
-
-                  write(*,'(/,'' statistical charge  = '',F10.4,/)')chrgcont
-
-                  ! HS-UHF ini for closed-shells allowed
-                  mspin=0
-                  call iniqm(nuc,xyz,iat,mchrg,mspin,betemp,edum,iniok,ECP)
-
-                  ! a second attempt if this fails
-                  if ( .not. iniok ) then
-                     iniok=.false.
-                     call iniqm(nuc,xyz,iat,mchrg,mspin,betemp,edum,iniok,ECP)
-                     if(.not.iniok) stop 'fatal QC error. Must stop!'
-                  endif
-
-                  if (.not. TempRun)then
-
-                     if (isec == 1)then
-                        nmax = nint(ENe(4) * 2.5 )
-                        !prestep = prestep / (4*nuc/10)  !200
-                        pretadd = float(nmax)*fstoau *(tstep*autofs) * 0.75_wp
-                        starting_MD = .true.
-                     else
-                        pretadd = 0.0_wp
-                        starting_MD = .false.
-                        if(fragstate == 2) nmax = nmax0 * 0.75
-                     endif
-
-                  elseif (TempRun .and. isec == 1) then
-                     pretadd = float(nmax)*fstoau *(tstep*autofs) * 0.75_wp
-                     starting_MD = .true.
-                  elseif (TempRun .and. isec > 1) then
-                     starting_MD = .false.
-                     pretadd = 0.0_wp
-                     if(fragstate == 2) nmax = nmax0 * 0.75
-                  endif
-
-                  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                  !! Pre-CID MD Loop => ESI MD
-                  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                  call md(itrj,icoll,isec,nuc,nmax,xyz,iat,mass,imass,mchrg,     &
-                  & grad,velo,velof,list,tstep,j,nfragexit,fragm,fragf,             &
-                  & fragat,dumpstep,etemp_in,md_ok,atm_charge,spin,axyz,tscale,pretadd,&
-                  & E_Scale*evtoau, .false.,Tav,Epav,Ekav,ttime,aTlast,fragstate,dtime,      &
-                  & ECP,starting_MD,0.0d0)
-                  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-                  write(*,'(/10x,''Results'',/,'' average Ekin '',F12.6)')Ekav
-                  write(*,'('' average Epot  '',F12.6)')Epav
-                  write(*,'('' average Etot  '',F12.6)')Epav+Ekav
-                  write(*,'('' average T (acc.)'',F12.1)')Tav
-                  !write(*,'('' Temp without acc '',F12.1)')new_Temp
-                  write(*,'('' average last T'',F12.1)')aTlast
-                  call ekinet(nuc,velo,mass,edum,t)
-                  ENe(3) = (t*(0.5*3*nuc*kB))/evtoau
-                  write(*,'('' final inner E'',F12.6)')ENe(3)
-
-
-                  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                  ! printout and count
-                  if(md_ok)then
-
-                     !> do IP calc and write out fragment files
-                     call manage_fragments(nuc, iat, xyz, axyz, mchrg, atm_charge, spin, mass, &
-                     &  imass, iprog, aTlast, itrj, icoll, isec, list, chrgcont, nfrag_ok,&
-                     &  tcont, nfrag, nometal, ECP, btf, maxsec, dtime, asave, io_res )
-
-                     write(*,*)
-
-                     !If MD fails
-                  else
-                     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-                     write(*,*)'something went wrong! Dont worry, the run'
-                     write(*,*)'is just not further counted.'
-                     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-                     !if(index(asave,'NOT USED') == 0)write(42,'(a)')asave
-                     !fail = .true.
-                     !exit
-                     stop
-                  endif
-
-                  if (.not. nfrag_ok) exit ESI_loop !exit if too many frags
-
-
-                  ! Save the new coordinates
-                  k=0
-                  dum=0
-                  cema=0
-                  if (tcont > 0) then
-                     do i = 1, nuc
-                        j = list(i)
-                        if(j == tcont) then
-                           k = k + 1
-                           xyzn (1:3,k) = xyz (1:3,i)
-                           velon(1:3,k) = velo(1:3,i)
-                           iatn (    k) = iat (    i)
-                           massn(    k) = mass(    i)
-                           imassn(   k) = imass(   i)
-                           dum          = dum + iatn(k)
-                           cema(1:3)    = cema(1:3) + xyzn(1:3,k) * iatn(k)
-                        endif
-                     enddo
-
-                     ! reset number of atoms
-                     nuc=k
-                     ! count number of fragmentations
-                     frag_counter = frag_counter + 1
-                     write(*,'(40(''!''))')
-                     write(*,'(''!! Fragmentation in ESI MD !!'')')
-                     write(*,'(''-- No of overall fragmentations: '',i3, '' --'')')&
-                        frag_counter
-                     write(*,'(40(''!''))')
-                     write(*,*)
-
-                  elseif (tcont == 0) then
-                     do i = 1, nuc
-                        xyzn (1:3,i) = xyz (1:3,i)
-                        velon(1:3,i) = velo(1:3,i)
-                        iatn (    i) = iat (    i)
-                        massn(    i) = mass(    i)
-                        imassn(   i) = imass(   i)
-                        dum          = dum + iatn(i)
-                        cema(1:3)    = cema(1:3) + xyzn(1:3,i) * iatn(i)
-                     enddo
-                  endif
-
-                  ! move to Center-of-mass
-                  cema(1:3) = cema(1:3) / dum
-
-
-                  ! reduce the simulation time
-                  if ( nuc < 12 ) nmax = nmax0 / 4
-
-                  ! do not continue with small fragments
-                  if ( nuc <= 7 ) then
-                     small = .true.
-                     exit
-                  endif
-
-                  ! do not continue with low masses/resolution of instrument (user)
-                  !if ( sum(mass(1:nuc)) / amutoau <=  minmass ) then
-                  !  littlemass = .true.
-                  !  exit
-                  !endif
-
-                  ! reallocate the variables, as they change for smaller systemsizes
-                  deallocate(xyz,axyz,grad,velo,velof,atm_charge,spin,iat,list,mass,imass)
-
-                  allocate(xyz (3,nuc),        &
-                     axyz(3,nuc),        &
-                     grad(3,nuc),        &
-                     velo(3,nuc),        &
-                     velof(nuc),         &
-                     atm_charge(nuc),    &
-                     spin(nuc),          &
-                     iat (nuc),          &
-                     list(nuc),          &
-                     imass(nuc),         &
-                     mass(nuc))
-
-                  do i=1,3
-                     xyz(i,1:nuc) = xyzn (i,1:nuc) - cema(i)
-                  enddo
-
-                  velo(1:3,1:nuc) = velon(1:3,1:nuc)
-                  iat (    1:nuc) = iatn (    1:nuc)
-                  mass(    1:nuc) = massn(    1:nuc)
-                  imass(   1:nuc) = imassn(   1:nuc)
-
-
-                  ! Check fragmentation state and chose what to do
-                  if ( tcont > 0 ) then
-                     cycle ESI_loop ! CYCLE the MD loop if fragmentation happend
-                  else
-                     exit ESI_loop  ! EXIT the MD loop if nothing happend
-                  endif
-
-               enddo ESI_loop ! ENDDO loop the MD module
-
-               if ( small .or. littlemass ) then
-                  if( index(asave,'NOT USED') == 0 ) then
-                     write(io_res,'(a)')asave
-                  endif
-               endif
-
-            endif doESI ! ENDIF E_Scale gt 0
-
-         endif noESI ! ENDIF No_ESI
-
-         tadd  = 0.0_wp !should be 0 anyway.
-         eimp  = 0.0_wp !should be 0 anyway.
-         velof = 1.0_wp
-
-         !Give info for not ESI runs and then no Coll. either
-         if (.not. TempRun .and. small ) write(*,*) &
-            ' Simulation stopped - too small molecule for collisions '
-
-         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-         !! Initial caclulation of number of collisions
-         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-         cnt:  if (.not. TempRun .and. .not. small) then
-
-            starting_md = .false.
-            new_counter = 0
-
-            ! Full Auto = Total Program control depending on mol. size, pressure cham. length etc.
-            auto:   if ( FullAuto )then
-
-               write(*,*) '--- No. of collisions automatically determined --'
-
-               ! Calculate radius as distance between COM and Atom that is the farest away from the COM
-               call collision_setup(nuc,iat,xyz,mass,rtot,cross,mfpath,calc_collisions)
-
-               ! distribute the no. of coll. to randomize a bit
-               collisions = vary_collisions(calc_collisions)
-
-               !write(*,'(/,80(''-''))')
-
-               ! Coll Auto = Other run modes
-            elseif ( CollAuto ) then
-               collisions = coll%set_coll ! starting coll are user set (default = 10)
-               !write(*,'(/,80(''-''))')
-               !write(*,*) 'Max. No of collisions : ', collisions
-
-            elseif ( Manual ) then
-
-               ! Users choose the fragmentation amount for all mod(itrj,x) runs
-               ! The entire spectrum is pieced together from 3 different amount of fragmentations
-               noauto:   if ( CollSec(1) /= 0 ) then
-                  write(*,'(/,80(''-''))')
-                  write(*,*) '!!! Number of fragmentations are user set !!!'
-                  if (mod(itrj,20)  ==  0)then !all 20 runs are stopped after CollSec(3) fragmentations
-                     collisions = coll%set_coll
-                     new_counter = CollSec(3)
-                     write(*,*) ' - Fragmentations this run: ', new_counter
-                  elseif (mod(itrj,3)  ==  0)then !all 3 runs are stopped after CollSec(3) fragmentations
-                     collisions = coll%set_coll
-                     new_counter = CollSec(2)
-                     write(*,*) ' - Fragmentations this run: ', new_counter
-                  else
-                     collisions = coll%set_coll
-                     new_counter = CollSec(1) ! The rest is stopped after CollSec(1) fragmentation
-                     write(*,*) ' - Fragmentations this run: ', new_counter
-                  endif
-
-                  ! Users chose the amount of collisions for different amount (percent) of runs
-                  ! The entire spectrum is pieced together from 3 different amounts of collisions
-               elseif(CollNo(1) /= 0)then
-                  write(*,'(/,80(''-''))')
-                  write(*,*) '!!! Amount of entire collisions are set !!!'
-                  write(*,*) '!!! i.e. M+ AND fragment-gas-coll (fgc) !!!'
-
-                  if     (mod(itrj,10)  ==  0) then ! every 10th run has CollNo(3) number of collisions
-                     collisions  = CollNo(3)
-                  elseif (mod(itrj,3)  ==  0) then ! every 3rd run has CollNo(2) number of collisions
-                     collisions  = CollNo(2)
-                  else
-                     collisions  = CollNo(1) ! The rest is stopped after CollNo(1) collisions
-                  endif
-
-                  new_counter = 0 ! Set to 0 so exit condition will be skipped
-
-                  ! Users chose the maximum amount of collisions between M+ and Gas
-                  ! There will be NO (fgc) collisions as soon as a fragmentation occurs !!!
-               elseif ( coll%max_coll /= 0 ) then
-                  write(*,'(/,80(''-''))')
-                  write(*,*) '!!! M+ collisions are user set !!!'
-                  collisions  = coll%max_coll
-                  new_counter = 1
-
-               endif noauto
-
-            endif auto
-
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! Start Loop for CID collision and subsequent MD simulation
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            cidlp:  do
-               if(icoll /= 0)then
-                  write(*,*) ' '
-                  write(*,*) ' '
-               endif
-
-               isec      = 1
-               icoll     = icoll + 1
-               fragstate = 0
-
-
-               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-               ! First collision
-               write(*,*)
-               write(*,'(80(''=''))')
-               write(*,'(a10,2x,i4,6x,a9,2x,i2,1x,a1,i2)')&
-               & 'trajectory ',itrj, 'collision ',icoll,'/',collisions
-               write(*,'(80(''-''))')
-               write(*,*)
-               write(*,'('' total charge          : '',i3)')       mchrg
-               write(*,'('' statistical charge    : '',f8.5)')  chrgcont
-               write(*,'(80(''=''))')
-
-               ! If verbose, write Coordinates
-               if ( verbose ) then
-                  write(*,*)'initial Cartesian coordinates:'
-
-                  do i = 1, nuc
-                     write(*,'(i3,3f10.5,4x,a2,f10.3)')&
-                     & i,xyz(1,i),xyz(2,i),xyz(3,i),to_symbol(iat(i)),mass(i)/amutoau
-                  enddo
-               endif
-
-
-               ! set the direction for the CID module after the first coll
-               if ( icoll /=  1 ) then
-                  direc = cm2(:) - cm1(:)
-                  direc = direc/norm2(direc)
-               endif
-
-               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-               ! Call CID module
-               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-               call cid(nuc, iat, mass, xyz, velo, tstep, mchrg, etemp_in,    &
-               & stopcid, ELAB, ECOM, axyz, ttime, eExact, ECP, manual_dist,  &
-               & vScale, MinPot, ConstVelo, cross,                            &
-               & mfpath, rtot, atm_charge, icoll, collisions, direc, new_velo,      &
-               & aTlast, calc_collisions, imass)
-               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-               new_temp = aTlast
-
-               ! Grad failure (too big steps)
-               if ( stopcid ) write(*,*) 'Error occured in the CID module'
-
-               ! END STUFF HERE
-               if ( stopcid ) exit
-
-               !> do IP calc and write out fragment files
-               call manage_fragments(nuc, iat, xyz, axyz, mchrg, atm_charge, spin, mass, &
-               &  imass, iprog, aTlast, itrj, icoll, isec, list, chrgcont, nfrag_ok, &
-               &  tcont, nfrag, nometal,  ECP, btf, maxsec, dtime, asave, io_res)
-
-               if (.not. nfrag_ok) exit cidlp !exit if too many frags
-
-               ! still have to figure out how to calculate the avg. xyz coords
-               !write(*,*) 'AVG XYZ'
-               !write(*,*) nuc
-               !write(*,*)
-               !do i = 1,nuc
-               !   write(*,*) trim(asym(iat(i))) &
-               !        ,' ',axyz(1,i)* autoaa     &
-               !        ,' ',axyz(2,i)* autoaa     &
-               !        ,' ',axyz(3,i)* autoaa
-               !end do
-
-
-               k    = 0
-               dum  = 0
-               cema = 0
-
-               if ( tcont > 0 ) then
-                  do i = 1, nuc
-                     j = list(i)
-                     if  ( j == tcont ) then
-                        k = k + 1
-                        xyzn (1:3,k) = xyz (1:3,i)
-                        velon(1:3,k) = velo(1:3,i)
-                        iatn (    k) = iat (    i)
-                        massn(    k) = mass(    i)
-                        imassn(   k) = imass(   i)
-                        dum          = dum + iatn(k)
-                        cema(1:3)    = cema(1:3) + xyzn(1:3,k) * iatn(k)
-                     endif
-                  enddo
-
-                  ! reset number of atoms
-                  nuc=k
-                  ! count number of fragmentations
-                  frag_counter = frag_counter + 1
-                  write(*,'(''-- No of overall fragmentations: '',i3, '' --'')')&
-                     frag_counter
-
-               elseif (tcont == 0) then
-                  do i = 1, nuc
-                     xyzn (1:3,i) = xyz (1:3,i)
-                     velon(1:3,i) = velo(1:3,i)
-                     iatn (    i) = iat (    i)
-                     massn(    i) = mass(    i)
-                     imassn(   i) = imass(   i)
-                     dum          = dum+iatn(i)
-                     cema(1:3)    = cema(1:3) + xyzn(1:3,i) * iatn(i)
-                  enddo
-               endif
-
-               ! move to Center-of-mass
-               cema(1:3) = cema(1:3) / dum
-
-               ! do not continue with small fragments
-               if ( nuc <= 7 ) then
-                  small = .true.
-                  exit
-               endif
-
-               ! do not continue with low masses/resolution of instrument (user)
-               if ( sum(mass(1:nuc)) / amutoau <=  minmass ) then
-                  littlemass = .true.
-                  exit
-               endif
-
-
-               ! reallocate the variables, as they change for smaller systemsizes
-               ! and for better visibility in the MD visualization
-               deallocate(xyz,axyz,grad,velo,velof,atm_charge,spin,iat,list,mass,imass)
-
-               allocate(xyz (3,nuc), &
-               &        axyz(3,nuc), &
-               &        grad(3,nuc), &
-               &        velo(3,nuc), &
-               &        velof(nuc),  &
-               &        atm_charge(nuc),   &
-               &        spin(nuc),   &
-               &        iat (nuc),   &
-               &        list(nuc),   &
-               &        imass(nuc),  &
-               &        mass(nuc))
-
-               do i = 1, 3
-                  xyz(i,1:nuc) = xyzn (i,1:nuc) - cema(i)
-               enddo
-
-               velo(1:3,1:nuc) = velon(1:3,1:nuc)
-               iat (    1:nuc) = iatn (    1:nuc)
-               mass(    1:nuc) = massn(    1:nuc)
-               imass(   1:nuc) = imassn(   1:nuc)
-
-
-
-               if ( small ) exit
-               if ( littlemass ) exit
-
-               ! We do not cycle the CID module, because we want to calculate
-               ! the mean-free-path in between collisions
-
-
-               write(*,'(80(''=''))')
-               write(*,'(a)') ' - Entering Mean-Free-Path simulation - '
-               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-               !!!!!        Mean-free-path MD                                       !!!!!
-               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-               ! Loop MD simulations if fragmentation occurs until nothing happens
-               MFPloop:  do
-                  isec = isec + 1
-                  Tdum = 0
-
-                  ! calculate the center-of-mass and reset for correct collision sim
-                  call center_of_mass(nuc,mass,xyz,cm)
-                  cm1(:) = cm(:)
-
-                  !write(*,'(80(''-''),/)')
-                  !write(*,'('' MFP trajectory               : '',i2)') isec - 1
-                  write(*,'(/,80(''-''))')
-                  write(*,'(a,i4,6x,a9,2x,i2,1x,a1,i2,a10,1x,i4)') &
-                  & 'Run #',itrj, 'collision ',icoll,'/',collisions, 'MFP traj.', isec -1
-                  write(*,'('' total charge                 : '',i3)')mchrg
-                  write(*,'('' statistical charge           : '',F10.4)')chrgcont
-                  write(*,*)
-                  write(*,'(80(''=''),/)')
-                  if ( verbose ) then
-                     write(*,'(''initial Cartesian coordinates :'')')
-                     write(*,*)
-
-                     do i = 1, nuc
-                        write(*,'(i3,3f10.5,4x,a2,f10.3)')i,xyz(1,i),xyz(2,i),xyz(3,i), &
-                        &    to_symbol(iat(i)) , mass(i) * autoamu
-                     enddo
-                  endif
-
-
-                  ! HS-UHF ini for closed-shells allowed
-                  mspin=0
-
-                  call iniqm(nuc,xyz,iat,mchrg,mspin,etemp_in,edum,iniok,ECP)
-
-                  ! a second attempt if this fails
-                  if ( .not. iniok ) then
-                     iniok=.false.
-                     call iniqm(nuc,xyz,iat,mchrg,mspin,etemp_in,edum,iniok,ECP)
-                     if ( .not. iniok ) stop 'fatal QC error. Must stop!'
-                  endif
-
-
-                  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                  !> reduce the simulation timings for performance
-
-                  !> change MFP times to reduce timings (empirical values)
-                  nmax = nuc * 100
-
-                  !> reduce the MD time if fragmentation in MFP occurs
-                  !> even if manually set
-                  if (isec == 3) nmax =int(nmax * 0.75_wp)
-                  if (isec == 4) nmax =int(nmax * 0.6_wp )
-                  if (isec >= 5) nmax =int(nmax * 0.5_wp )
-
-                  !>> not too short/long simulations
-                  if ( nmax < 1000   ) nmax = 1000
-                  if ( nmax > 10000  ) nmax = 10000
-
-                  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                  !! Do Mean-free-path (MFP) MD with nmax timesteps
-                  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                  call md(itrj,icoll,isec,nuc,nmax,xyz,iat,mass,imass,mchrg,grad,&
-                  &       velo,velof,list,tstep,j,nfragexit,                      &
-                  &       fragm,fragf,fragat,dumpstep,etemp_in,                   &
-                  &       md_ok,atm_charge,spin,axyz,                             &
-                  &       Tdum,tadd,eimp,.false.,Tav,Epav,Ekav,ttime,aTlast,      &
-                  &       fragstate,dtime,ECP,.false.,new_velo)
-                  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-                  !> print some energy results if wanted
-                  if ( verbose ) then
-                     write(*,'(/10x,''Results'')')
-                     write(*,'(20(''-''))')
-                     write(*,'('' average Ekin     '',F12.6)')Ekav
-                     write(*,'('' average Epot     '',F12.6)')Epav
-                     write(*,'('' average Etot     '',F12.6)')Epav+Ekav
-                     write(*,'('' average T (acc.) '',F12.1)')Tav
-                     write(*,'('' Temp without acc '',F12.1)')new_Temp
-                     write(*,'('' average last T   '',F12.1)')aTlast
-                  endif !verbose
-
-                  ! calculate the new center-of-mass as reference
-                  call center_of_mass(nuc,mass,xyz,cm)
-                  cm2(:) = cm(:)
-                  !!!
-
-                  ! cm_out = sqrt(cm2(1)**2+cm2(2)**2+cm2(3)**2)
-                  !.       - sqrt(cm1(1)**2+cm1(2)**2+cm1(3)**2)
-                  !
-                  ! new_velo = (cm_out / (ttime*fstoau)) / mstoau
-                  ! new_velo = (cm_out / (2000*fstoau)) / mstoau
-                  ! ttime=0 ! Set the md time to 0 for correct simulation time (maybe change)
-
-
-                  ! printout and count
-                  if(md_ok)then
-                     !> do IP calc and write out fragment files
-                     call manage_fragments(nuc, iat, xyz, axyz, mchrg, atm_charge, spin, mass, &
-                     &  imass, iprog, aTlast, itrj, icoll, isec, list, chrgcont, nfrag_ok, &
-                     &  tcont, nfrag, nometal, ECP, btf, maxsec, dtime, asave, io_res )
-
-                     !If MD fails
-                     write(*,*)
-                  else
-                     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-                     write(*,*)'something went wrong! Dont worry, the run'
-                     write(*,*)'is just not further counted.'
-                     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-                     !stop
-                     exit cidlp
-                  endif
-
-                  if (.not. nfrag_ok) exit cidlp !exit if too many frags
-
-                  ! Save the new coordinates
-                  k    = 0
-                  dum  = 0
-                  cema = 0
-
-                  if ( tcont > 0 ) then
-                     do i = 1, nuc
-                        j = list(i)
-                        if ( j == tcont ) then
-                           k = k + 1
-                           xyzn (1:3,k) = xyz (1:3,i)
-                           velon(1:3,k) = velo(1:3,i)
-                           iatn (    k) = iat (    i)
-                           massn(    k) = mass(    i)
-                           imassn(   k) = imass(   i)
-                           dum          = dum+iatn(k)
-                           cema(1:3)    = cema(1:3) + xyzn(1:3,k) * iatn(k)
-                        endif
-                     enddo
-
-                     ! reset number of atoms
-                     nuc = k
-                     ! count number of fragmentations
-                     frag_counter = frag_counter + 1
-                     write(*,'(''-- No of overall fragmentations: '',i3, '' --'')')&
-                        frag_counter
-
-                  elseif ( tcont == 0 ) then
-                     do i = 1, nuc
-                        xyzn (1:3,i) = xyz (1:3,i)
-                        velon(1:3,i) = velo(1:3,i)
-                        iatn (    i) = iat (    i)
-                        massn(    i) = mass(    i)
-                        imassn(   i) = imass(   i)
-                        dum          = dum+iatn(i)
-                        cema(1:3)    = cema(1:3)+xyzn(1:3,i)*iatn(i)
-                     enddo
-                  endif
-
-                  ! move to Center-of-mass
-                  cema(1:3) = cema(1:3) / dum
-
-                  ! do not continue with small fragments
-                  if ( nuc <= 7 ) then
-                     small = .true.
-                     exit
-                  endif
-
-                  ! do not continue with low masses/resolution of instrument (user)
-                  if ( sum(mass(1:nuc)) / amutoau <=  minmass ) then
-                     littlemass = .true.
-                     exit
-                  endif
-
-                  ! reallocate the variables, as they change for smaller systemsizes
-                  deallocate(xyz,axyz,grad,velo,velof,atm_charge,spin,iat,list,mass,imass)
-
-                  allocate(xyz (3,nuc), &
-                  & axyz(3,nuc),        &
-                  & grad(3,nuc),        &
-                  & velo(3,nuc),        &
-                  & velof(nuc),         &
-                  & atm_charge(nuc),    &
-                  & spin(nuc),          &
-                  & iat (nuc),          &
-                  & list(nuc),          &
-                  & imass(nuc),         &
-                  & mass(nuc))
-
-                  do i = 1, 3
-                     xyz(i, 1:nuc) = xyzn (i,1:nuc) - cema(i)
-                  enddo
-
-                  velo(1:3,1:nuc) = velon(1:3,1:nuc)
-                  iat (    1:nuc) = iatn (    1:nuc)
-                  mass(    1:nuc) = massn(    1:nuc)
-                  imass(   1:nuc) = imassn(   1:nuc)
-
-
-                  ! chose what to do
-                  if ( tcont > 0 ) then
-                     cycle MFPloop ! CYCLE the MD loop if fragmentation happend
-                  else
-                     exit MFPloop  ! EXIT the MD loop if nothing happend
-                  endif
-
-                  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-               enddo MFPloop ! ENDDO loop the MD module
-               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-               ! Define some stopping criteria for the collisions
-               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-               ! 1.) If the fragments become too small
-               if ( small ) exit
-               if ( littlemass ) exit
-
-
-               ! 2.) If the velocity or the !COM Energy! get too low
-               summass = 0
-
-               do i = 1, nuc
-                  summass = summass +  mass(i)
-               enddo
-
-               E_KIN = 0.5_wp * summass * (( new_velo * mstoau )**2)
-               beta = gas%mIatom / (gas%mIatom + summass)
-               E_COM = calc_ECOM(beta,E_KIN) !(beta * E_KIN) * autoev
-               !write(*,*) 'BETA      :    ',beta
-               !write(*,*) 'ECOM (eV) :    ', E_COM
-               !write(*,*)'NEW VELO MD:', new_velo
-
-               ! set end-conditions for the CID module
-               if ( new_velo <= 800 .or. E_COM <= 0.85_wp .and. MinPot == 0 ) then
-                  if(index(asave,'NOT USED') == 0)then
-                     write(io_res,'(a)')asave
-                  endif
-                  write(*,'(40(''!''))')
-                  write(*,'(''!   Low velocity and thus low E(COM)  !'')')
-                  write(*,'('' -> The velocity is now: '',f12.4)') new_velo
-                  write(*,'('' -> E(COM)       is now: '',f12.4)') E_COM
-                  write(*,'(40(''!''))')
-                  exit
-               endif
-
-               !--------------------------------------------------------------
-               ! 3.1.) If the number of fragmentaion steps are exceeded
-               !Collauto  == false
-               if ( Manual .and. new_counter > 0 ) then
-                  if ( frag_counter >= new_counter ) then
-                     if ( index(asave,'NOT USED') == 0) then
-                        write(io_res,'(a)')asave
-                     endif
-                     write(*,*) ' !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-                     write(*,*) ' Maximum number of fragmentations done. Exit.'
-                     write(*,*) ' !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-                     exit !Make this value depnendent on first nmbr of nucs
-                  endif
-               endif
-
-               !--------------------------------------------------------------
-               ! 3.2.) If fragmentation occured, check the rest of the collisions
-               !       Fullauto run-type!
-               Full:     if (FullAuto .and. frag_counter > save_counter) then
-
-                  save_counter = frag_counter
-
-                  ! Set-up collision number and vary the amount (cid.f90)
-                  call collision_setup(nuc,iat,xyz,mass,rtot,cross,mfpath, &
-                  &    calc_collisions)
-
-                  ! set varied number of collisions by BoxMuller distr.
-                  collisions = vary_collisions(calc_collisions)
-
-                  ! Check if molecule is not too small to make collisions
-                  if ( collisions == 0 .and. icoll /= 1 ) then
-                     write(*,*) 'Molecule too small for further collisions'
-
-                     if(index(asave,'NOT USED') == 0)then
-                        write(io_res,'(a)')asave
-                     endif
-
-                     exit ! Finished
-
-                  endif
-
-                  !write(*,*) ' Radius Ion (m)               : ', rtot
-                  !write(*,*) ' Radius Gas Atom (m)          : ', (rIatom/aatoau) * 1E-10
-                  write(*,*) ' Cross-section (M+) (m²)      : ', cross
-                  write(*,*) ' Mean free path (m)           : ', mfpath
-                  write(*,*) ' chamber length (m)           : ', cell%lchamb
-                  !write(*,*) ' Number of collisions varied  : ', collisions
-
-               endif Full
-
-               !--------------------------------------------------------------
-               ! 3.3) For Collauto (NOT Fullauto)
-               ! Vary the amount of collisions depending on the number of atoms
-               CollLp:   if (CollAuto .and. frag_counter > save_counter) then
-
-                  ! Set-up collision number and vary the amount (cid.f90)
-                  call collision_setup(nuc,iat,xyz,mass,rtot,cross,mfpath, &
-                  &    calc_collisions)
-
-                  if ( collisions > 0 )then
-                     !> set random seed and number
-                     !> else the random seed from start is taken
-                     if (iseed(1) == 0) then
-                        !call random_seed()
-                        call random_seed(numb)
-                     endif
-
-                     call random_number(a)
-
-                     b = nuc / 10.0
-                     dep = nint(b)
-
-                     rand_int =  FLOOR((dep+1)*a) ! 0-dep
-                     write(*,'('' Random integer        : '',I2)') rand_int
-
-                     collisions = icoll + rand_int !+ dep
-                     numb=numb+1
-                     write(*,'('' Total no. collisions  : '',i2)') collisions
-
-                  elseif( collisions == 0 .and. icoll /= 1)then
-                     write(*,*) 'Molecule too small for further collisions'
-
-                     if(index(asave,'NOT USED') == 0)then
-                        write(io_res,'(a)')asave
-                     endif
-
-                     exit ! Finished
-
-                  endif
-               endif CollLp
-
-               ! 4.) If the max number of collisions is reached
-               if ( icoll >= collisions ) then
-                  write(*,*)'-------------------------------------------------'
-                  write(*,*)' Last MD is finished. All is written out'
-                  write(*,*)'-------------------------------------------------'
-                  write(io_res,'(a)')asave
-
-                  if(num_frags == 0)then
-                     write(*,*)''
-                     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-                     write(*,*)'    No fragmentation in the simulation!   '
-                     write(*,*)'   Increase energy or time of sampling.   '
-                     write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-                  endif
-
-                  exit cidlp ! End the collision routine
-
-               elseif ( icoll /= collisions .and. tcont == 0 ) then
-
-                  write(*,*)''
-                  write(*,*)'--------------------------------------------------'
-                  write(*,*)'-- NOTHING HAPPENED - Next collision simulation --'
-                  write(*,*)'--------------------------------------------------'
-
-               endif
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            enddo cidlp! ENDDO Collision routine
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-            ! Write out too small molecules
-            if(small)then
-               if(index(asave,'NOT USED') == 0)then
-                  write(io_res,'(a)')asave
-               endif
-               write(*,'(60(''!''))')
-               write(*,*)'     run not continued because of small fragment(s)'
-               write(*,'(60(''!''))')
-               write(*,*)''
-            endif
-
-            ! Write out too light molecules
-            if(littlemass)then
-               if(index(asave,'NOT USED') == 0)then
-                  write(io_res,'(a)')asave
-               endif
-               write(*,'(60(''!''))')
-               write(*,'(''run not continued because of resolution'')')
-               write(*,'(60(''!''))')
-               write(*,'(''Threshold  : '',4x,i4)') minmass
-               write(*,'(''Frag. mass : '',4x,f10.6)') sum(mass(1:nuc)) * autoamu
-               write(*,*)
-            endif
-
-            ! ERROR
-            if(stopcid)then
-               if(index(asave,'NOT USED') == 0)write(io_res,'(a)')asave
-               write(*,'(60(''!''))')
-               write(*,*)' --- run aborted, last structure saved! --- '
-               write(*,'(60(''!''))')
-               write(*,*)
-            endif
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-         endif cnt ! ENDIF not temprun
-      endif mCID ! ENDIF CID MODULE (Method == 3)
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! Start Electron ionization Routine
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!                   !!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!                   !!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!                   !!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!                   !!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!                   !!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!                   !!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!                   !!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!                   !!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!                   !!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !!!!!!!                   !!!!!!!!!!      !!!!!!!!!!                  !!!!!!!!!!!
+  !!!!!!!                   !!!!!!!!!!      !!!!!!!!!!                  !!!!!!!!!!!
+  !!!!!!!                   !!!!!!!!!!      !!!!!!!!!!                  !!!!!!!!!!!
+  !!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!      !!!!!!!!
+  !!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!      !!!!!!!!
+  !!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!      !!!!!!!!
+  !!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!!!!      !!!!!
+  !!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!!!!      !!!!!
+  !!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!!!!      !!!!!
+  !!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!!!!      !!!!!
+  !!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!!!!      !!!!!
+  !!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!!!!      !!!!!
+  !!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!!!!      !!!!!
+  !!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!!!!      !!!!!
+  !!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!!!!      !!!!!
+  !!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!      !!!!!!!!
+  !!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!      !!!!!!!!
+  !!!!!!!                   !!!!!!!!!!      !!!!!!!!!!      !!!!!!!!!      !!!!!!!!
+  !!!!!!!                   !!!!!!!!!!      !!!!!!!!!!                  !!!!!!!!!!!
+  !!!!!!!                   !!!!!!!!!!      !!!!!!!!!!                  !!!!!!!!!!!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! Initialize QM code for production runs
+  ! The cid module is called dependend on the number of collisions it
+  ! undergoes.
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! Go into CID module
+mCID:   if ( method == 3 ) then
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !set%tadd  = tadd !should be 0 anyway.
+  velof = 1.0_wp
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> set charge
+  mchrg =  mchrg_prod
+
+  chrgcont  = real(mchrg,wp)
+
+  collisions = 0
+
+  edum = 0
+
+  !> Check if input (qcxms.in) makes sense
+  call cidcheck(coll%max_coll, CollNo, CollSec)
+
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! Do ESI MD if ESI larger than 0
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  noESI: if (.not. No_ESI )then
+
+    write(*,*) ''
+    write(*,*) '# ## ### ## # ## ### ## # ##'
+    write(*,*) '# ESI simulation turned ON #'
+    write(*,*) '# ## ### ## # ## ### ## # ##'
+    write(*,*) ''
+
+    !> get internal energy
+    call ekinet(nuc,velo,mass,edum,t)
+    edum = t * (0.5 * 3 * nuc *kB )
+    !>> starting energy
+    ENe(1) = edum * autoev
+
+    !>> scaling energy
+    ENe(2) = eimp * autoev
+
+    write(*,'('' Randomly Scaling internal energy: '')')
+    write(*,'(50(''-''))')
+    write(*,'('' Inner Energy before          : '', f14.6, a3)') ENe(1), ' eV'
+    write(*,'('' Temperature  before          : '', f14.6, a3)')      T, ' K'
+    write(*,'(50(''-''))')
+    write(*,'('' Wanted value Energy          : '', f7.4, a3)'  ) Ene(2), ' eV'
+    write(*,'(50(''-''))')
+
+
+    !>> scale depending on random number (or not, if value too low)
+    !edum = rand_int - edum
+    edum = ENe(2) - ENe(1)
+    if (edum > 0) then
+        E_Scale = Ene(2)
+    else
+        write(*,*) ' ! No Scaling ! '
+        E_Scale = 0.0_wp
+    endif
+
+    !> stop if both values were provided (to circumvent errors in input)
+    if ( tempESI > 0 .and. ESI > 0 ) stop 'Cannot provide both, Energy and Temp.!'
+
+    !> make sure nothing strange is scaled
+    if (E_Scale <= 0) E_Scale = 0
+
+    !> convert values for output
+    tScale = (E_Scale * 2.0d0/3.0d0) /(nuc * kB * autoev)
+    ENe(4) = tScale - t
+
+    if (tScale > 0) then
+        write(*,'('' Scaling to Temperature       : '', f14.6,a3)') tScale,' K'
+        write(*,*) ' '
+    endif
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    ! Do the ESI pre-MD to scale to the energy given
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    doESI:  if ( E_Scale > 0 ) then
+
+        ESI_loop: do
+          isec = isec + 1
+
+          write(*,*)'Trajectory: ', itrj
+          write(*,'(/,80(''=''))')
+          write(*,*)'Heating  trajectory            ',isec
+          write(*,'(80(''=''),/)')
+
+          if ( verbose ) then
+              write(*,*)'initial Cartesian coordinates:'
+
+              do i=1,nuc
+                write(*,'(i3,3f10.5,4x,a2,f10.3)')&
+                &  i,xyz(1,i),xyz(2,i),xyz(3,i),to_symbol(iat(i)),mass(i)/amutoau
+              enddo
+          endif
+
+          write(*,'(/,'' statistical charge  = '',F10.4,/)')chrgcont
+
+          ! HS-UHF ini for closed-shells allowed
+          mspin=0
+          call iniqm(nuc,xyz,iat,mchrg,mspin,betemp,edum,iniok,ECP)
+
+          ! a second attempt if this fails
+          if ( .not. iniok ) then
+              iniok=.false.
+              call iniqm(nuc,xyz,iat,mchrg,mspin,betemp,edum,iniok,ECP)
+              if(.not.iniok) stop 'fatal QC error. Must stop!'
+          endif
+
+          if (.not. TempRun)then
+
+              if (isec == 1)then
+                nmax = nint(ENe(4) * 2.5 )
+                !prestep = prestep / (4*nuc/10)  !200
+                pretadd = float(nmax)*fstoau *(tstep*autofs) * 0.75_wp
+                starting_MD = .true.
+              else
+                pretadd = 0.0_wp
+                starting_MD = .false.
+                if(fragstate == 2) nmax = nmax0 * 0.75
+              endif
+
+          elseif (TempRun .and. isec == 1) then
+              pretadd = float(nmax)*fstoau *(tstep*autofs) * 0.75_wp
+              starting_MD = .true.
+          elseif (TempRun .and. isec > 1) then
+              starting_MD = .false.
+              pretadd = 0.0_wp
+              if(fragstate == 2) nmax = nmax0 * 0.75
+          endif
+
+          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          !! Pre-CID MD Loop => ESI MD
+          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          call md(itrj,icoll,isec,nuc,nmax,xyz,iat,mass,imass,mchrg,     &
+          & grad,velo,velof,list,tstep,j,nfragexit,fragm,fragf,             &
+          & fragat,dumpstep,etemp_in,md_ok,atm_charge,spin,axyz,tscale,pretadd,&
+          & E_Scale*evtoau, .false.,Tav,Epav,Ekav,ttime,aTlast,fragstate,dtime,      &
+          & ECP,starting_MD,0.0d0)
+          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+          write(*,'(/10x,''Results'',/,'' average Ekin '',F12.6)')Ekav
+          write(*,'('' average Epot  '',F12.6)')Epav
+          write(*,'('' average Etot  '',F12.6)')Epav+Ekav
+          write(*,'('' average T (acc.)'',F12.1)')Tav
+          !write(*,'('' Temp without acc '',F12.1)')new_Temp
+          write(*,'('' average last T'',F12.1)')aTlast
+          call ekinet(nuc,velo,mass,edum,t)
+          ENe(3) = (t*(0.5*3*nuc*kB))/evtoau
+          write(*,'('' final inner E'',F12.6)')ENe(3)
+
+
+          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          ! printout and count
+          if(md_ok)then
+
+              !> do IP calc and write out fragment files
+              call manage_fragments(nuc, iat, xyz, axyz, mchrg, atm_charge, spin, mass, &
+              &  imass, iprog, aTlast, itrj, icoll, isec, list, chrgcont, nfrag_ok,&
+              &  tcont, nfrag, nometal, ECP, btf, maxsec, dtime, asave, io_res )
+
+              write(*,*)
+
+              !If MD fails
+          else
+              write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+              write(*,*)'something went wrong! Dont worry, the run'
+              write(*,*)'is just not further counted.'
+              write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+              !if(index(asave,'NOT USED') == 0)write(42,'(a)')asave
+              !fail = .true.
+              !exit
+              stop
+          endif
+
+          if (.not. nfrag_ok) exit ESI_loop !exit if too many frags
+
+
+          ! Save the new coordinates
+          k=0
+          dum=0
+          cema=0
+          if (tcont > 0) then
+              do i = 1, nuc
+                j = list(i)
+                if(j == tcont) then
+                    k = k + 1
+                    xyzn (1:3,k) = xyz (1:3,i)
+                    velon(1:3,k) = velo(1:3,i)
+                    iatn (    k) = iat (    i)
+                    massn(    k) = mass(    i)
+                    imassn(   k) = imass(   i)
+                    dum          = dum + iatn(k)
+                    cema(1:3)    = cema(1:3) + xyzn(1:3,k) * iatn(k)
+                endif
+              enddo
+
+              ! reset number of atoms
+              nuc=k
+              ! count number of fragmentations
+              frag_counter = frag_counter + 1
+              write(*,'(40(''!''))')
+              write(*,'(''!! Fragmentation in ESI MD !!'')')
+              write(*,'(''-- No of overall fragmentations: '',i3, '' --'')')&
+                frag_counter
+              write(*,'(40(''!''))')
+              write(*,*)
+
+          elseif (tcont == 0) then
+              do i = 1, nuc
+                xyzn (1:3,i) = xyz (1:3,i)
+                velon(1:3,i) = velo(1:3,i)
+                iatn (    i) = iat (    i)
+                massn(    i) = mass(    i)
+                imassn(   i) = imass(   i)
+                dum          = dum + iatn(i)
+                cema(1:3)    = cema(1:3) + xyzn(1:3,i) * iatn(i)
+              enddo
+          endif
+
+          ! move to Center-of-mass
+          cema(1:3) = cema(1:3) / dum
+
+
+          ! reduce the simulation time
+          if ( nuc < 12 ) nmax = nmax0 / 4
+
+          ! do not continue with small fragments
+          if ( nuc <= 7 ) then
+              small = .true.
+              exit
+          endif
+
+          ! do not continue with low masses/resolution of instrument (user)
+          !if ( sum(mass(1:nuc)) / amutoau <=  minmass ) then
+          !  littlemass = .true.
+          !  exit
+          !endif
+
+          ! reallocate the variables, as they change for smaller systemsizes
+          deallocate(xyz,axyz,grad,velo,velof,atm_charge,spin,iat,list,mass,imass)
+
+          allocate(xyz (3,nuc),        &
+              axyz(3,nuc),        &
+              grad(3,nuc),        &
+              velo(3,nuc),        &
+              velof(nuc),         &
+              atm_charge(nuc),    &
+              spin(nuc),          &
+              iat (nuc),          &
+              list(nuc),          &
+              imass(nuc),         &
+              mass(nuc))
+
+          do i=1,3
+              xyz(i,1:nuc) = xyzn (i,1:nuc) - cema(i)
+          enddo
+
+          velo(1:3,1:nuc) = velon(1:3,1:nuc)
+          iat (    1:nuc) = iatn (    1:nuc)
+          mass(    1:nuc) = massn(    1:nuc)
+          imass(   1:nuc) = imassn(   1:nuc)
+
+
+          ! Check fragmentation state and chose what to do
+          if ( tcont > 0 ) then
+              cycle ESI_loop ! CYCLE the MD loop if fragmentation happend
+          else
+              exit ESI_loop  ! EXIT the MD loop if nothing happend
+          endif
+
+        enddo ESI_loop ! ENDDO loop the MD module
+
+        if ( small .or. littlemass ) then
+          if( index(asave,'NOT USED') == 0 ) then
+              write(io_res,'(a)')asave
+          endif
+        endif
+
+    endif doESI ! ENDIF E_Scale gt 0
+
+  endif noESI ! ENDIF No_ESI
+
+  tadd  = 0.0_wp !should be 0 anyway.
+  eimp  = 0.0_wp !should be 0 anyway.
+  velof = 1.0_wp
+
+  !Give info for not ESI runs and then no Coll. either
+  if (.not. TempRun .and. small ) write(*,*) &
+    ' Simulation stopped - too small molecule for collisions '
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !! Initial caclulation of number of collisions
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  cnt:  if (.not. TempRun .and. .not. small) then
+
+    starting_md = .false.
+    new_counter = 0
+
+    ! Full Auto = Total Program control depending on mol. size, pressure cham. length etc.
+    auto:   if ( FullAuto )then
+
+        write(*,*) '--- No. of collisions automatically determined --'
+
+        ! Calculate radius as distance between COM and Atom that is the farest away from the COM
+        call collision_setup(nuc,iat,xyz,mass,rtot,cross,mfpath,calc_collisions)
+
+        ! distribute the no. of coll. to randomize a bit
+        collisions = vary_collisions(calc_collisions)
+
+        !write(*,'(/,80(''-''))')
+
+        ! Coll Auto = Other run modes
+    elseif ( CollAuto ) then
+        collisions = coll%set_coll ! starting coll are user set (default = 10)
+        !write(*,'(/,80(''-''))')
+        !write(*,*) 'Max. No of collisions : ', collisions
+
+    elseif ( Manual ) then
+
+        ! Users choose the fragmentation amount for all mod(itrj,x) runs
+        ! The entire spectrum is pieced together from 3 different amount of fragmentations
+        noauto:   if ( CollSec(1) /= 0 ) then
+          write(*,'(/,80(''-''))')
+          write(*,*) '!!! Number of fragmentations are user set !!!'
+          if (mod(itrj,20)  ==  0)then !all 20 runs are stopped after CollSec(3) fragmentations
+              collisions = coll%set_coll
+              new_counter = CollSec(3)
+              write(*,*) ' - Fragmentations this run: ', new_counter
+          elseif (mod(itrj,3)  ==  0)then !all 3 runs are stopped after CollSec(3) fragmentations
+              collisions = coll%set_coll
+              new_counter = CollSec(2)
+              write(*,*) ' - Fragmentations this run: ', new_counter
+          else
+              collisions = coll%set_coll
+              new_counter = CollSec(1) ! The rest is stopped after CollSec(1) fragmentation
+              write(*,*) ' - Fragmentations this run: ', new_counter
+          endif
+
+          ! Users chose the amount of collisions for different amount (percent) of runs
+          ! The entire spectrum is pieced together from 3 different amounts of collisions
+        elseif(CollNo(1) /= 0)then
+          write(*,'(/,80(''-''))')
+          write(*,*) '!!! Amount of entire collisions are set !!!'
+          write(*,*) '!!! i.e. M+ AND fragment-gas-coll (fgc) !!!'
+
+          if     (mod(itrj,10)  ==  0) then ! every 10th run has CollNo(3) number of collisions
+              collisions  = CollNo(3)
+          elseif (mod(itrj,3)  ==  0) then ! every 3rd run has CollNo(2) number of collisions
+              collisions  = CollNo(2)
+          else
+              collisions  = CollNo(1) ! The rest is stopped after CollNo(1) collisions
+          endif
+
+          new_counter = 0 ! Set to 0 so exit condition will be skipped
+
+          ! Users chose the maximum amount of collisions between M+ and Gas
+          ! There will be NO (fgc) collisions as soon as a fragmentation occurs !!!
+        elseif ( coll%max_coll /= 0 ) then
+          write(*,'(/,80(''-''))')
+          write(*,*) '!!! M+ collisions are user set !!!'
+          collisions  = coll%max_coll
+          new_counter = 1
+
+        endif noauto
+
+    endif auto
+
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! Start Loop for CID collision and subsequent MD simulation
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    cidlp:  do
+        if(icoll /= 0)then
+          write(*,*) ' '
+          write(*,*) ' '
+        endif
+
+        isec      = 1
+        icoll     = icoll + 1
+        fragstate = 0
+
+
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        ! First collision
+        write(*,*)
+        write(*,'(80(''=''))')
+        write(*,'(a10,2x,i4,6x,a9,2x,i2,1x,a1,i2)')&
+        & 'trajectory ',itrj, 'collision ',icoll,'/',collisions
+        write(*,'(80(''-''))')
+        write(*,*)
+        write(*,'('' total charge          : '',i3)')       mchrg
+        write(*,'('' statistical charge    : '',f8.5)')  chrgcont
+        write(*,'(80(''=''))')
+
+        ! If verbose, write Coordinates
+        if ( verbose ) then
+          write(*,*)'initial Cartesian coordinates:'
+
+          do i = 1, nuc
+              write(*,'(i3,3f10.5,4x,a2,f10.3)')&
+              & i,xyz(1,i),xyz(2,i),xyz(3,i),to_symbol(iat(i)),mass(i)/amutoau
+          enddo
+        endif
+
+
+        ! set the direction for the CID module after the first coll
+        if ( icoll /=  1 ) then
+          direc = cm2(:) - cm1(:)
+          direc = direc/norm2(direc)
+        endif
+
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        ! Call CID module
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        call cid(nuc, iat, mass, xyz, velo, tstep, mchrg, etemp_in,    &
+        & stopcid, ELAB, ECOM, axyz, ttime, eExact, ECP, manual_dist,  &
+        & vScale, MinPot, ConstVelo, cross,                            &
+        & mfpath, rtot, atm_charge, icoll, collisions, direc, new_velo,      &
+        & aTlast, calc_collisions, imass)
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        new_temp = aTlast
+
+        ! Grad failure (too big steps)
+        if ( stopcid ) write(*,*) 'Error occured in the CID module'
+
+        ! END STUFF HERE
+        if ( stopcid ) exit
+
+        !> do IP calc and write out fragment files
+        call manage_fragments(nuc, iat, xyz, axyz, mchrg, atm_charge, spin, mass, &
+        &  imass, iprog, aTlast, itrj, icoll, isec, list, chrgcont, nfrag_ok, &
+        &  tcont, nfrag, nometal,  ECP, btf, maxsec, dtime, asave, io_res)
+
+        if (.not. nfrag_ok) exit cidlp !exit if too many frags
+
+        ! still have to figure out how to calculate the avg. xyz coords
+        !write(*,*) 'AVG XYZ'
+        !write(*,*) nuc
+        !write(*,*)
+        !do i = 1,nuc
+        !   write(*,*) trim(asym(iat(i))) &
+        !        ,' ',axyz(1,i)* autoaa     &
+        !        ,' ',axyz(2,i)* autoaa     &
+        !        ,' ',axyz(3,i)* autoaa
+        !end do
+
+
+        k    = 0
+        dum  = 0
+        cema = 0
+
+        if ( tcont > 0 ) then
+          do i = 1, nuc
+              j = list(i)
+              if  ( j == tcont ) then
+                k = k + 1
+                xyzn (1:3,k) = xyz (1:3,i)
+                velon(1:3,k) = velo(1:3,i)
+                iatn (    k) = iat (    i)
+                massn(    k) = mass(    i)
+                imassn(   k) = imass(   i)
+                dum          = dum + iatn(k)
+                cema(1:3)    = cema(1:3) + xyzn(1:3,k) * iatn(k)
+              endif
+          enddo
+
+          ! reset number of atoms
+          nuc=k
+          ! count number of fragmentations
+          frag_counter = frag_counter + 1
+          write(*,'(''-- No of overall fragmentations: '',i3, '' --'')')&
+              frag_counter
+
+        elseif (tcont == 0) then
+          do i = 1, nuc
+              xyzn (1:3,i) = xyz (1:3,i)
+              velon(1:3,i) = velo(1:3,i)
+              iatn (    i) = iat (    i)
+              massn(    i) = mass(    i)
+              imassn(   i) = imass(   i)
+              dum          = dum+iatn(i)
+              cema(1:3)    = cema(1:3) + xyzn(1:3,i) * iatn(i)
+          enddo
+        endif
+
+        ! move to Center-of-mass
+        cema(1:3) = cema(1:3) / dum
+
+        ! do not continue with small fragments
+        if ( nuc <= 7 ) then
+          small = .true.
+          exit
+        endif
+
+        ! do not continue with low masses/resolution of instrument (user)
+        if ( sum(mass(1:nuc)) / amutoau <=  minmass ) then
+          littlemass = .true.
+          exit
+        endif
+
+
+        ! reallocate the variables, as they change for smaller systemsizes
+        ! and for better visibility in the MD visualization
+        deallocate(xyz,axyz,grad,velo,velof,atm_charge,spin,iat,list,mass,imass)
+
+        allocate(xyz (3,nuc), &
+        &        axyz(3,nuc), &
+        &        grad(3,nuc), &
+        &        velo(3,nuc), &
+        &        velof(nuc),  &
+        &        atm_charge(nuc),   &
+        &        spin(nuc),   &
+        &        iat (nuc),   &
+        &        list(nuc),   &
+        &        imass(nuc),  &
+        &        mass(nuc))
+
+        do i = 1, 3
+          xyz(i,1:nuc) = xyzn (i,1:nuc) - cema(i)
+        enddo
+
+        velo(1:3,1:nuc) = velon(1:3,1:nuc)
+        iat (    1:nuc) = iatn (    1:nuc)
+        mass(    1:nuc) = massn(    1:nuc)
+        imass(   1:nuc) = imassn(   1:nuc)
+
+
+
+        if ( small ) exit
+        if ( littlemass ) exit
+
+        ! We do not cycle the CID module, because we want to calculate
+        ! the mean-free-path in between collisions
+
+
+        write(*,'(80(''=''))')
+        write(*,'(a)') ' - Entering Mean-Free-Path simulation - '
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        !!!!!        Mean-free-path MD                                       !!!!!
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        ! Loop MD simulations if fragmentation occurs until nothing happens
+        MFPloop:  do
+          isec = isec + 1
+          Tdum = 0
+
+          ! calculate the center-of-mass and reset for correct collision sim
+          call center_of_mass(nuc,mass,xyz,cm)
+          cm1(:) = cm(:)
+
+          !write(*,'(80(''-''),/)')
+          !write(*,'('' MFP trajectory               : '',i2)') isec - 1
+          write(*,'(/,80(''-''))')
+          write(*,'(a,i4,6x,a9,2x,i2,1x,a1,i2,a10,1x,i4)') &
+          & 'Run #',itrj, 'collision ',icoll,'/',collisions, 'MFP traj.', isec -1
+          write(*,'('' total charge                 : '',i3)')mchrg
+          write(*,'('' statistical charge           : '',F10.4)')chrgcont
+          write(*,*)
+          write(*,'(80(''=''),/)')
+          if ( verbose ) then
+              write(*,'(''initial Cartesian coordinates :'')')
+              write(*,*)
+
+              do i = 1, nuc
+                write(*,'(i3,3f10.5,4x,a2,f10.3)')i,xyz(1,i),xyz(2,i),xyz(3,i), &
+                &    to_symbol(iat(i)) , mass(i) * autoamu
+              enddo
+          endif
+
+
+          ! HS-UHF ini for closed-shells allowed
+          mspin=0
+
+          call iniqm(nuc,xyz,iat,mchrg,mspin,etemp_in,edum,iniok,ECP)
+
+          ! a second attempt if this fails
+          if ( .not. iniok ) then
+              iniok=.false.
+              call iniqm(nuc,xyz,iat,mchrg,mspin,etemp_in,edum,iniok,ECP)
+              if ( .not. iniok ) stop 'fatal QC error. Must stop!'
+          endif
+
+
+          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          !> reduce the simulation timings for performance
+
+          !> change MFP times to reduce timings (empirical values)
+          nmax = nuc * 100
+
+          !> reduce the MD time if fragmentation in MFP occurs
+          !> even if manually set
+          if (isec == 3) nmax =int(nmax * 0.75_wp)
+          if (isec == 4) nmax =int(nmax * 0.6_wp )
+          if (isec >= 5) nmax =int(nmax * 0.5_wp )
+
+          !>> not too short/long simulations
+          if ( nmax < 1000   ) nmax = 1000
+          if ( nmax > 10000  ) nmax = 10000
+
+          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          !! Do Mean-free-path (MFP) MD with nmax timesteps
+          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          call md(itrj,icoll,isec,nuc,nmax,xyz,iat,mass,imass,mchrg,grad,&
+          &       velo,velof,list,tstep,j,nfragexit,                      &
+          &       fragm,fragf,fragat,dumpstep,etemp_in,                   &
+          &       md_ok,atm_charge,spin,axyz,                             &
+          &       Tdum,tadd,eimp,.false.,Tav,Epav,Ekav,ttime,aTlast,      &
+          &       fragstate,dtime,ECP,.false.,new_velo)
+          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+          !> print some energy results if wanted
+          if ( verbose ) then
+              write(*,'(/10x,''Results'')')
+              write(*,'(20(''-''))')
+              write(*,'('' average Ekin     '',F12.6)')Ekav
+              write(*,'('' average Epot     '',F12.6)')Epav
+              write(*,'('' average Etot     '',F12.6)')Epav+Ekav
+              write(*,'('' average T (acc.) '',F12.1)')Tav
+              write(*,'('' Temp without acc '',F12.1)')new_Temp
+              write(*,'('' average last T   '',F12.1)')aTlast
+          endif !verbose
+
+          ! calculate the new center-of-mass as reference
+          call center_of_mass(nuc,mass,xyz,cm)
+          cm2(:) = cm(:)
+          !!!
+
+          ! cm_out = sqrt(cm2(1)**2+cm2(2)**2+cm2(3)**2)
+          !.       - sqrt(cm1(1)**2+cm1(2)**2+cm1(3)**2)
+          !
+          ! new_velo = (cm_out / (ttime*fstoau)) / mstoau
+          ! new_velo = (cm_out / (2000*fstoau)) / mstoau
+          ! ttime=0 ! Set the md time to 0 for correct simulation time (maybe change)
+
+
+          ! printout and count
+          if(md_ok)then
+              !> do IP calc and write out fragment files
+              call manage_fragments(nuc, iat, xyz, axyz, mchrg, atm_charge, spin, mass, &
+              &  imass, iprog, aTlast, itrj, icoll, isec, list, chrgcont, nfrag_ok, &
+              &  tcont, nfrag, nometal, ECP, btf, maxsec, dtime, asave, io_res )
+
+              !If MD fails
+              write(*,*)
+          else
+              write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+              write(*,*)'something went wrong! Dont worry, the run'
+              write(*,*)'is just not further counted.'
+              write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+              !stop
+              exit cidlp
+          endif
+
+          if (.not. nfrag_ok) exit cidlp !exit if too many frags
+
+          ! Save the new coordinates
+          k    = 0
+          dum  = 0
+          cema = 0
+
+          if ( tcont > 0 ) then
+              do i = 1, nuc
+                j = list(i)
+                if ( j == tcont ) then
+                    k = k + 1
+                    xyzn (1:3,k) = xyz (1:3,i)
+                    velon(1:3,k) = velo(1:3,i)
+                    iatn (    k) = iat (    i)
+                    massn(    k) = mass(    i)
+                    imassn(   k) = imass(   i)
+                    dum          = dum+iatn(k)
+                    cema(1:3)    = cema(1:3) + xyzn(1:3,k) * iatn(k)
+                endif
+              enddo
+
+              ! reset number of atoms
+              nuc = k
+              ! count number of fragmentations
+              frag_counter = frag_counter + 1
+              write(*,'(''-- No of overall fragmentations: '',i3, '' --'')')&
+                frag_counter
+
+          elseif ( tcont == 0 ) then
+              do i = 1, nuc
+                xyzn (1:3,i) = xyz (1:3,i)
+                velon(1:3,i) = velo(1:3,i)
+                iatn (    i) = iat (    i)
+                massn(    i) = mass(    i)
+                imassn(   i) = imass(   i)
+                dum          = dum+iatn(i)
+                cema(1:3)    = cema(1:3)+xyzn(1:3,i)*iatn(i)
+              enddo
+          endif
+
+          ! move to Center-of-mass
+          cema(1:3) = cema(1:3) / dum
+
+          ! do not continue with small fragments
+          if ( nuc <= 7 ) then
+              small = .true.
+              exit
+          endif
+
+          ! do not continue with low masses/resolution of instrument (user)
+          if ( sum(mass(1:nuc)) / amutoau <=  minmass ) then
+              littlemass = .true.
+              exit
+          endif
+
+          ! reallocate the variables, as they change for smaller systemsizes
+          deallocate(xyz,axyz,grad,velo,velof,atm_charge,spin,iat,list,mass,imass)
+
+          allocate(xyz (3,nuc), &
+          & axyz(3,nuc),        &
+          & grad(3,nuc),        &
+          & velo(3,nuc),        &
+          & velof(nuc),         &
+          & atm_charge(nuc),    &
+          & spin(nuc),          &
+          & iat (nuc),          &
+          & list(nuc),          &
+          & imass(nuc),         &
+          & mass(nuc))
+
+          do i = 1, 3
+              xyz(i, 1:nuc) = xyzn (i,1:nuc) - cema(i)
+          enddo
+
+          velo(1:3,1:nuc) = velon(1:3,1:nuc)
+          iat (    1:nuc) = iatn (    1:nuc)
+          mass(    1:nuc) = massn(    1:nuc)
+          imass(   1:nuc) = imassn(   1:nuc)
+
+
+          ! chose what to do
+          if ( tcont > 0 ) then
+              cycle MFPloop ! CYCLE the MD loop if fragmentation happend
+          else
+              exit MFPloop  ! EXIT the MD loop if nothing happend
+          endif
+
+          !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        enddo MFPloop ! ENDDO loop the MD module
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        ! Define some stopping criteria for the collisions
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        ! 1.) If the fragments become too small
+        if ( small ) exit
+        if ( littlemass ) exit
+
+
+        ! 2.) If the velocity or the !COM Energy! get too low
+        summass = 0
+
+        do i = 1, nuc
+          summass = summass +  mass(i)
+        enddo
+
+        E_KIN = 0.5_wp * summass * (( new_velo * mstoau )**2)
+        beta = gas%mIatom / (gas%mIatom + summass)
+        E_COM = calc_ECOM(beta,E_KIN) !(beta * E_KIN) * autoev
+        !write(*,*) 'BETA      :    ',beta
+        !write(*,*) 'ECOM (eV) :    ', E_COM
+        !write(*,*)'NEW VELO MD:', new_velo
+
+        ! set end-conditions for the CID module
+        if ( new_velo <= 800 .or. E_COM <= 0.85_wp .and. MinPot == 0 ) then
+          if(index(asave,'NOT USED') == 0)then
+              write(io_res,'(a)')asave
+          endif
+          write(*,'(40(''!''))')
+          write(*,'(''!   Low velocity and thus low E(COM)  !'')')
+          write(*,'('' -> The velocity is now: '',f12.4)') new_velo
+          write(*,'('' -> E(COM)       is now: '',f12.4)') E_COM
+          write(*,'(40(''!''))')
+          exit
+        endif
+
+        !--------------------------------------------------------------
+        ! 3.1.) If the number of fragmentaion steps are exceeded
+        !Collauto  == false
+        if ( Manual .and. new_counter > 0 ) then
+          if ( frag_counter >= new_counter ) then
+              if ( index(asave,'NOT USED') == 0) then
+                write(io_res,'(a)')asave
+              endif
+              write(*,*) ' !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+              write(*,*) ' Maximum number of fragmentations done. Exit.'
+              write(*,*) ' !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+              exit !Make this value depnendent on first nmbr of nucs
+          endif
+        endif
+
+        !--------------------------------------------------------------
+        ! 3.2.) If fragmentation occured, check the rest of the collisions
+        !       Fullauto run-type!
+        Full:     if (FullAuto .and. frag_counter > save_counter) then
+
+          save_counter = frag_counter
+
+          ! Set-up collision number and vary the amount (cid.f90)
+          call collision_setup(nuc,iat,xyz,mass,rtot,cross,mfpath, &
+          &    calc_collisions)
+
+          ! set varied number of collisions by BoxMuller distr.
+          collisions = vary_collisions(calc_collisions)
+
+          ! Check if molecule is not too small to make collisions
+          if ( collisions == 0 .and. icoll /= 1 ) then
+              write(*,*) 'Molecule too small for further collisions'
+
+              if(index(asave,'NOT USED') == 0)then
+                write(io_res,'(a)')asave
+              endif
+
+              exit ! Finished
+
+          endif
+
+          !write(*,*) ' Radius Ion (m)               : ', rtot
+          !write(*,*) ' Radius Gas Atom (m)          : ', (rIatom/aatoau) * 1E-10
+          write(*,*) ' Cross-section (M+) (m²)      : ', cross
+          write(*,*) ' Mean free path (m)           : ', mfpath
+          write(*,*) ' chamber length (m)           : ', cell%lchamb
+          !write(*,*) ' Number of collisions varied  : ', collisions
+
+        endif Full
+
+        !--------------------------------------------------------------
+        ! 3.3) For Collauto (NOT Fullauto)
+        ! Vary the amount of collisions depending on the number of atoms
+        CollLp:   if (CollAuto .and. frag_counter > save_counter) then
+
+          ! Set-up collision number and vary the amount (cid.f90)
+          call collision_setup(nuc,iat,xyz,mass,rtot,cross,mfpath, &
+          &    calc_collisions)
+
+          if ( collisions > 0 )then
+              !> set random seed and number
+              !> else the random seed from start is taken
+              if (iseed(1) == 0) then
+                !call random_seed()
+                call random_seed(numb)
+              endif
+
+              call random_number(a)
+
+              b = nuc / 10.0
+              dep = nint(b)
+
+              rand_int =  FLOOR((dep+1)*a) ! 0-dep
+              write(*,'('' Random integer        : '',I2)') rand_int
+
+              collisions = icoll + rand_int !+ dep
+              numb=numb+1
+              write(*,'('' Total no. collisions  : '',i2)') collisions
+
+          elseif( collisions == 0 .and. icoll /= 1)then
+              write(*,*) 'Molecule too small for further collisions'
+
+              if(index(asave,'NOT USED') == 0)then
+                write(io_res,'(a)')asave
+              endif
+
+              exit ! Finished
+
+          endif
+        endif CollLp
+
+        ! 4.) If the max number of collisions is reached
+        if ( icoll >= collisions ) then
+          write(*,*)'-------------------------------------------------'
+          write(*,*)' Last MD is finished. All is written out'
+          write(*,*)'-------------------------------------------------'
+          write(io_res,'(a)')asave
+
+          if(num_frags == 0)then
+              write(*,*)''
+              write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+              write(*,*)'    No fragmentation in the simulation!   '
+              write(*,*)'   Increase energy or time of sampling.   '
+              write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+          endif
+
+          exit cidlp ! End the collision routine
+
+        elseif ( icoll /= collisions .and. tcont == 0 ) then
+
+          write(*,*)''
+          write(*,*)'--------------------------------------------------'
+          write(*,*)'-- NOTHING HAPPENED - Next collision simulation --'
+          write(*,*)'--------------------------------------------------'
+
+        endif
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    enddo cidlp! ENDDO Collision routine
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    ! Write out too small molecules
+    if(small)then
+        if(index(asave,'NOT USED') == 0)then
+          write(io_res,'(a)')asave
+        endif
+        write(*,'(60(''!''))')
+        write(*,*)'     run not continued because of small fragment(s)'
+        write(*,'(60(''!''))')
+        write(*,*)''
+    endif
+
+    ! Write out too light molecules
+    if(littlemass)then
+        if(index(asave,'NOT USED') == 0)then
+          write(io_res,'(a)')asave
+        endif
+        write(*,'(60(''!''))')
+        write(*,'(''run not continued because of resolution'')')
+        write(*,'(60(''!''))')
+        write(*,'(''Threshold  : '',4x,i4)') minmass
+        write(*,'(''Frag. mass : '',4x,f10.6)') sum(mass(1:nuc)) * autoamu
+        write(*,*)
+    endif
+
+    ! ERROR
+    if(stopcid)then
+        if(index(asave,'NOT USED') == 0)write(io_res,'(a)')asave
+        write(*,'(60(''!''))')
+        write(*,*)' --- run aborted, last structure saved! --- '
+        write(*,'(60(''!''))')
+        write(*,*)
+    endif
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  endif cnt ! ENDIF not temprun
+endif mCID ! ENDIF CID MODULE (Method == 3)
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! Start Electron ionization Routine
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!                   !!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!                   !!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!                   !!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!                   !!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!                   !!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!                   !!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!                   !!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!                   !!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!                   !!!!!!!!!!!!!!!!!      !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! Start Electron ionization Routine
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-      ei: if (method /= 3 ) then !.and. method /= 4)then
+  ei: if (method /= 3 ) then !.and. method /= 4)then
+      !> set the starting overall charge to user input (or default)
+      mchrg =  mchrg_prod
 
-         !> set the starting overall charge to user input (or default)
-         mchrg =  mchrg_prod
+      !> set the statistical charge to user input (or default)
+      chrgcont  = real(mchrg,wp)
 
-         !> set the statistical charge to user input (or default)
-         chrgcont  = real(mchrg,wp)
+      loop: do
+        !> increase the count of runs
+        isec = isec + 1
 
-         loop: do
-            !> increase the count of runs
-            isec = isec + 1
+        !> write out info
+        write(*,'(/,80(''=''))')
+        write(*,*)'                      trajectory ',itrj,isec
+        write(*,'(80(''=''),/)')
+        if ( verbose ) then
+            write(*,*)'initial Cartesian coordinates:'
 
-            !> write out info
-            write(*,'(/,80(''=''))')
-            write(*,*)'                      trajectory ',itrj,isec
-            write(*,'(80(''=''),/)')
-            if ( verbose ) then
-               write(*,*)'initial Cartesian coordinates:'
+            !> write out coordinates
+            do i = 1, nuc
+              write(*,'(i3,3f10.5,4x,a2,f10.3)')&
+              & i,xyz(1,i),xyz(2,i),xyz(3,i),to_symbol(iat(i)),mass(i)/amutoau
+            enddo
+        endif
 
-               !> write out coordinates
-               do i = 1, nuc
-                  write(*,'(i3,3f10.5,4x,a2,f10.3)')&
-                  & i,xyz(1,i),xyz(2,i),xyz(3,i),to_symbol(iat(i)),mass(i)/amutoau
-               enddo
-            endif
+        !> write out statistical charge
+        write(*,'(/,'' statistical charge  = '',F10.4,/)')chrgcont
 
-            !> write out statistical charge
-            write(*,'(/,'' statistical charge  = '',F10.4,/)')chrgcont
+        ! re- initialize the GBSA module (if ever becomes important)
+        !         if (lgbsa)then
+        !           call ekinet(nuc,velo,mass,edum,t)
+        !           call init_gbsa(nuc,iat,solvent,gsolvstate,t)
+        !         endif
 
-            ! re- initialize the GBSA module (if ever becomes important)
-            !         if (lgbsa)then
-            !           call ekinet(nuc,velo,mass,edum,t)
-            !           call init_gbsa(nuc,iat,solvent,gsolvstate,t)
-            !         endif
+        !> initialize the QC code
+        !> HS- UHF ini for closed-shells allowed
+        mspin = 0
+        call iniqm(nuc,xyz,iat,mchrg,mspin,betemp,edum,iniok,ECP)
 
-            !> initialize the QC code
-            !> HS- UHF ini for closed-shells allowed
-            mspin = 0
+        !> a second attempt if this fails
+        if ( .not. iniok ) then
+            iniok =.false.
             call iniqm(nuc,xyz,iat,mchrg,mspin,betemp,edum,iniok,ECP)
+            if ( .not. iniok) stop 'fatal QC error. Must stop!'
+        endif
 
-            !> a second attempt if this fails
-            if ( .not. iniok ) then
-               iniok =.false.
-               call iniqm(nuc,xyz,iat,mchrg,mspin,betemp,edum,iniok,ECP)
-               if ( .not. iniok) stop 'fatal QC error. Must stop!'
-            endif
+        !> if the loop runs more times (in EI i.e. consecutive
+        !  fragmentation, set nfragexit = 2
+        if ( isec > 1 ) nfragexit = 2
 
-            !> if the loop runs more times (in EI i.e. consecutive
-            !  fragmentation, set nfragexit = 2
-            if ( isec > 1 ) nfragexit = 2
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        !>  do production MD run
+        Tdum=0
+        call md(itrj,0,isec,nuc,nmax,xyz,iat,mass,imass,mchrg,grad, &
+        &       velo,velof,list,tstep,j,nfragexit,                  &
+        &       fragm,fragf,fragat,dumpstep,etemp_in,                &
+        &       md_ok,atm_charge,spin,axyz,                                &
+        &       Tdum,tadd,eimp,.false.,Tav,Epav,Ekav,ttime,aTlast,  &
+        &       fragstate,dtime,ECP,.false.,0.0_wp)
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            !>  do production MD run
-            Tdum=0
-            call md(itrj,0,isec,nuc,nmax,xyz,iat,mass,imass,mchrg,grad, &
-            &       velo,velof,list,tstep,j,nfragexit,                  &
-            &       fragm,fragf,fragat,dumpstep,etemp_in,                &
-            &       md_ok,atm_charge,spin,axyz,                                &
-            &       Tdum,tadd,eimp,.false.,Tav,Epav,Ekav,ttime,aTlast,  &
-            &       fragstate,dtime,ECP,.false.,0.0_wp)
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        !> write out the energies
+        write(*,'(/10x,''Results'',/,'' average Ekin '',F12.6)')Ekav
+        write(*,'('' average Epot  '',F12.6)')Epav
+        write(*,'('' average Etot  '',F12.6)')Epav+Ekav
+        write(*,'('' average T     '',F12.1)')Tav
+        write(*,'('' average last T'',F12.1)')aTlast
 
-            !> write out the energies
-            write(*,'(/10x,''Results'',/,'' average Ekin '',F12.6)')Ekav
-            write(*,'('' average Epot  '',F12.6)')Epav
-            write(*,'('' average Etot  '',F12.6)')Epav+Ekav
-            write(*,'('' average T     '',F12.1)')Tav
-            write(*,'('' average last T'',F12.1)')aTlast
+        ! printout and count
+        okmd:   if(md_ok)then
+            !> do IP calc and write out fragment files
+            call manage_fragments(nuc, iat, xyz, axyz, mchrg, atm_charge, spin, mass, imass, &
+            &  iprog, aTlast, itrj, icoll, isec, list, chrgcont, nfrag_ok,  &
+            &  tcont, nfrag, nometal, ECP, btf, maxsec, dtime, asave, io_res )
 
-            ! printout and count
-            okmd:   if(md_ok)then
-               !> do IP calc and write out fragment files
-               call manage_fragments(nuc, iat, xyz, axyz, mchrg, atm_charge, spin, mass, imass, &
-               &  iprog, aTlast, itrj, icoll, isec, list, chrgcont, nfrag_ok,  &
-               &  tcont, nfrag, nometal, ECP, btf, maxsec, dtime, asave, io_res )
+            if (.not. nfrag_ok) exit !exit if too many frags
 
-               if (.not. nfrag_ok) exit !exit if too many frags
+            ! this is likely to be wrong (too many fragmnets for EI)
+            !if ( nfrag > 5 ) then
+            !  write(*,*)'    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+            !  write(*,*)'    !! something went wrong! Dont worry, the run !!'
+            !  write(*,*)'    !! is just not counted.                      !!'
+            !  write(*,*)'    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+            !  exit
+            !endif
 
-               ! this is likely to be wrong (too many fragmnets for EI)
-               !if ( nfrag > 5 ) then
-               !  write(*,*)'    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-               !  write(*,*)'    !! something went wrong! Dont worry, the run !!'
-               !  write(*,*)'    !! is just not counted.                      !!'
-               !  write(*,*)'    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-               !  exit
-               !endif
+            frag:     if(tcont > 0 .and. maxsec > 0)then
+              ! because IEE decreases, we can reduce the max length of
+              ! the trj by 20% for each generation
+              ! but not less than nmax(start)/2
+              nmax=nmax-nmax0/5
+              nmax=max(nmax,nmax0/2)
+              ! also if frag is small (see below)
 
-               frag:     if(tcont > 0 .and. maxsec > 0)then
-                  ! because IEE decreases, we can reduce the max length of
-                  ! the trj by 20% for each generation
-                  ! but not less than nmax(start)/2
-                  nmax=nmax-nmax0/5
-                  nmax=max(nmax,nmax0/2)
-                  ! also if frag is small (see below)
+              ! if nothing happened already in the last MD, make it short
+              if(fragstate == 2) nmax=nmax0/3
 
-                  ! if nothing happened already in the last MD, make it short
-                  if(fragstate == 2) nmax=nmax0/3
-
-                  k=0
-                  dum=0
-                  cema=0
-                  do i=1,nuc
-                     j=list(i)
-                     if(j == tcont)then
-                        k=k+1
-                        xyzn (1:3,k)=xyz (1:3,i)
-                        velon(1:3,k)=velo(1:3,i)
-                        iatn (    k)=iat (    i)
-                        massn(    k)=mass(    i)
-                        imassn(   k)=imass(   i)
-                        dum         =dum+iatn(k)
-                        cema(1:3)   =cema(1:3)+xyzn(1:3,k)*iatn(k)
-                     endif
-                  enddo
-                  ! move to center-of-mass (CEMA)
-                  cema(1:3) = cema(1:3) / dum
-                  nuc=k
-                  if(nuc <= 10) nmax=nmax0/10
-
-                  ! do not continue with small fragments
-                  if(nuc <= 3)then
-                     if(index(asave,'NOT USED') == 0)write(io_res,'(a)')asave
-                     write(*,*)'     run not continued because of small fragment(s)'
-                     exit
+              k=0
+              dum=0
+              cema=0
+              do i=1,nuc
+                  j=list(i)
+                  if(j == tcont)then
+                    k=k+1
+                    xyzn (1:3,k)=xyz (1:3,i)
+                    velon(1:3,k)=velo(1:3,i)
+                    iatn (    k)=iat (    i)
+                    massn(    k)=mass(    i)
+                    imassn(   k)=imass(   i)
+                    dum         =dum+iatn(k)
+                    cema(1:3)   =cema(1:3)+xyzn(1:3,k)*iatn(k)
                   endif
+              enddo
+              ! move to center-of-mass (CEMA)
+              cema(1:3) = cema(1:3) / dum
+              nuc=k
+              if(nuc <= 10) nmax=nmax0/10
 
-                  deallocate(xyz,axyz,grad,velo,velof,atm_charge,spin,iat,list,mass,imass)
+              ! do not continue with small fragments
+              if(nuc <= 3)then
+                  if(index(asave,'NOT USED') == 0)write(io_res,'(a)')asave
+                  write(*,*)'     run not continued because of small fragment(s)'
+                  exit
+              endif
 
-                  allocate(xyz (3,nuc), &
-                  &  axyz(3,nuc),       &
-                  &  grad(3,nuc),       &
-                  &  velo(3,nuc),       &
-                  &  velof(nuc),        &
-                  &  atm_charge(nuc),         &
-                  &  spin(nuc),         &
-                  &  iat (nuc),         &
-                  &  list(nuc),         &
-                  &  imass(nuc),        &
-                  &  mass(nuc))
+              deallocate(xyz,axyz,grad,velo,velof,atm_charge,spin,iat,list,mass,imass)
 
-                  do i=1,3
-                     xyz(i,1:nuc)=xyzn (i,1:nuc)-cema(i)
-                  enddo
-                  velo(1:3,1:nuc)=velon(1:3,1:nuc)
-                  iat (    1:nuc)=iatn (    1:nuc)
-                  mass(    1:nuc)=massn(    1:nuc)
-                  imass(   1:nuc)=imassn(   1:nuc)
-                  velof=0
-                  tadd=0
-                  eimp=0
+              allocate(xyz (3,nuc), &
+              &  axyz(3,nuc),       &
+              &  grad(3,nuc),       &
+              &  velo(3,nuc),       &
+              &  velof(nuc),        &
+              &  atm_charge(nuc),         &
+              &  spin(nuc),         &
+              &  iat (nuc),         &
+              &  list(nuc),         &
+              &  imass(nuc),        &
+              &  mass(nuc))
 
-                  cycle loop !if fragmented
+              do i=1,3
+                  xyz(i,1:nuc)=xyzn (i,1:nuc)-cema(i)
+              enddo
+              velo(1:3,1:nuc)=velon(1:3,1:nuc)
+              iat (    1:nuc)=iatn (    1:nuc)
+              mass(    1:nuc)=massn(    1:nuc)
+              imass(   1:nuc)=imassn(   1:nuc)
+              velof=0
+              tadd=0
+              eimp=0
 
-               else ! if No fragmentation
+              cycle loop !if fragmented
 
-                  exit loop ! exit the EI- MD loop
+            else ! if No fragmentation
 
-               endif frag
+              exit loop ! exit the EI- MD loop
 
-            else !If MD failed
-               write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-               write(*,*)'something went wrong! Dont worry, the run'
-               write(*,*)'is just not further counted.'
-               write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-               if(index(asave,'NOT USED') == 0)write(io_res,'(a)')asave
+            endif frag
 
-               exit loop
+        else !If MD failed
+            write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+            write(*,*)'something went wrong! Dont worry, the run'
+            write(*,*)'is just not further counted.'
+            write(*,*)'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+            if(index(asave,'NOT USED') == 0)write(io_res,'(a)')asave
 
-            endif okmd
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            exit loop
 
-         enddo loop  ! End the prod. run loop
+        endif okmd
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-      endif ei ! END IF the EI/DEA Module
+      enddo loop  ! End the prod. run loop
 
-   endif prun ! End the production run tree
+  endif ei ! END IF the EI/DEA Module
+
+endif prun ! End the production run tree
 
 !ENDENDENDENDENDENDENDENDENDENDENDENDENDENDENDENDENDENDENDENDEND
 
