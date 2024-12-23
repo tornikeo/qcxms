@@ -1506,7 +1506,7 @@ mCID:   if ( method == 3 ) then
   !! Initial caclulation of number of collisions
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  cnt:  if (.not. TempRun .and. .not. small) then
+  cnt: if (.not. TempRun .and. .not. small) then
 
     starting_md = .false.
     new_counter = 0
@@ -1531,52 +1531,51 @@ mCID:   if ( method == 3 ) then
         !write(*,*) 'Max. No of collisions : ', collisions
 
     elseif ( Manual ) then
+      ! Users choose the fragmentation amount for all mod(itrj,x) runs
+      ! The entire spectrum is pieced together from 3 different amount of fragmentations
+      noauto:   if ( CollSec(1) /= 0 ) then
+        write(*,'(/,80(''-''))')
+        write(*,*) '!!! Number of fragmentations are user set !!!'
+        if (mod(itrj,20)  ==  0)then !all 20 runs are stopped after CollSec(3) fragmentations
+            collisions = coll%set_coll
+            new_counter = CollSec(3)
+            write(*,*) ' - Fragmentations this run: ', new_counter
+        elseif (mod(itrj,3)  ==  0)then !all 3 runs are stopped after CollSec(3) fragmentations
+            collisions = coll%set_coll
+            new_counter = CollSec(2)
+            write(*,*) ' - Fragmentations this run: ', new_counter
+        else
+            collisions = coll%set_coll
+            new_counter = CollSec(1) ! The rest is stopped after CollSec(1) fragmentation
+            write(*,*) ' - Fragmentations this run: ', new_counter
+        endif
 
-        ! Users choose the fragmentation amount for all mod(itrj,x) runs
-        ! The entire spectrum is pieced together from 3 different amount of fragmentations
-        noauto:   if ( CollSec(1) /= 0 ) then
-          write(*,'(/,80(''-''))')
-          write(*,*) '!!! Number of fragmentations are user set !!!'
-          if (mod(itrj,20)  ==  0)then !all 20 runs are stopped after CollSec(3) fragmentations
-              collisions = coll%set_coll
-              new_counter = CollSec(3)
-              write(*,*) ' - Fragmentations this run: ', new_counter
-          elseif (mod(itrj,3)  ==  0)then !all 3 runs are stopped after CollSec(3) fragmentations
-              collisions = coll%set_coll
-              new_counter = CollSec(2)
-              write(*,*) ' - Fragmentations this run: ', new_counter
-          else
-              collisions = coll%set_coll
-              new_counter = CollSec(1) ! The rest is stopped after CollSec(1) fragmentation
-              write(*,*) ' - Fragmentations this run: ', new_counter
-          endif
+        ! Users chose the amount of collisions for different amount (percent) of runs
+        ! The entire spectrum is pieced together from 3 different amounts of collisions
+      elseif(CollNo(1) /= 0)then
+        write(*,'(/,80(''-''))')
+        write(*,*) '!!! Amount of entire collisions are set !!!'
+        write(*,*) '!!! i.e. M+ AND fragment-gas-coll (fgc) !!!'
 
-          ! Users chose the amount of collisions for different amount (percent) of runs
-          ! The entire spectrum is pieced together from 3 different amounts of collisions
-        elseif(CollNo(1) /= 0)then
-          write(*,'(/,80(''-''))')
-          write(*,*) '!!! Amount of entire collisions are set !!!'
-          write(*,*) '!!! i.e. M+ AND fragment-gas-coll (fgc) !!!'
+        if     (mod(itrj,10)  ==  0) then ! every 10th run has CollNo(3) number of collisions
+            collisions  = CollNo(3)
+        elseif (mod(itrj,3)  ==  0) then ! every 3rd run has CollNo(2) number of collisions
+            collisions  = CollNo(2)
+        else
+            collisions  = CollNo(1) ! The rest is stopped after CollNo(1) collisions
+        endif
 
-          if     (mod(itrj,10)  ==  0) then ! every 10th run has CollNo(3) number of collisions
-              collisions  = CollNo(3)
-          elseif (mod(itrj,3)  ==  0) then ! every 3rd run has CollNo(2) number of collisions
-              collisions  = CollNo(2)
-          else
-              collisions  = CollNo(1) ! The rest is stopped after CollNo(1) collisions
-          endif
+        new_counter = 0 ! Set to 0 so exit condition will be skipped
 
-          new_counter = 0 ! Set to 0 so exit condition will be skipped
+        ! Users chose the maximum amount of collisions between M+ and Gas
+        ! There will be NO (fgc) collisions as soon as a fragmentation occurs !!!
+      elseif ( coll%max_coll /= 0 ) then
+        write(*,'(/,80(''-''))')
+        write(*,*) '!!! M+ collisions are user set !!!'
+        collisions  = coll%max_coll
+        new_counter = 1
 
-          ! Users chose the maximum amount of collisions between M+ and Gas
-          ! There will be NO (fgc) collisions as soon as a fragmentation occurs !!!
-        elseif ( coll%max_coll /= 0 ) then
-          write(*,'(/,80(''-''))')
-          write(*,*) '!!! M+ collisions are user set !!!'
-          collisions  = coll%max_coll
-          new_counter = 1
-
-        endif noauto
+      endif noauto
 
     endif auto
 
@@ -1629,7 +1628,7 @@ mCID:   if ( method == 3 ) then
         endif
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        ! Call CID module
+        ! Call CID module (TODO: This is the heavy hitter here)
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         call cid(nuc, iat, mass, xyz, velo, tstep, mchrg, etemp_in,    &
         & stopcid, ELAB, ECOM, axyz, ttime, eExact, ECP, manual_dist,  &
