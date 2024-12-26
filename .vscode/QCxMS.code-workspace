@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../../qc/pycid"
+		}
+	],
+	"settings": {
+		"fortran.linter.includePaths": [
+			"${workspaceFolder}/src/**"
+		],
+		"fortran.fortls.directories": [
+			"${workspaceFolder}/src/**"
+		]
+	}
+}

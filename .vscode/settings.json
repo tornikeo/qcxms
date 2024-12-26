@@ -5,5 +5,5 @@
     "fortran.fortls.directories": [
         "${workspaceFolder}/src/**",
     ],
-    "jupyter.notebookFileRoot": "${workspaceFolder}",
+    "editor.inlineSuggest.enabled": false,
 }
