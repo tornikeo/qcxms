@@ -10,9 +10,12 @@ message('Fortran compiler ID: ' + fc_id)
 
 if fc_id == 'gcc'
   add_project_arguments(
-    '-g', '-O0',
+    # '-g', '-O0',
+    # '-Ofast',
+    '-pg',
+    '-w',
     '-ffree-line-length-none',
-    '-fbacktrace',
+    # '-fbacktrace',
     # '-fimplicit-none',
     # '-fcheck=all',
     language: 'fortran',

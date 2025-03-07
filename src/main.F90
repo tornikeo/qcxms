@@ -7,7 +7,7 @@
 !                                                neutral M trajectory
 ! call as  qcxms  when <qcxms.gs> exists     : create inputs for production
 !                                                runs, qcxms.in is read and used
-! call as  qcxms -prod                        : do paralell fragmentation runs
+! call as  qcxms --prod                        : do paralell fragmentation runs
 !                                                as called by pmsprep script
 ! the code can be run with any of the following QC programs:
 ! TURBOMOLE, ORCA, MOPAC2012, DFTB+, MNDO99 or MSINDO

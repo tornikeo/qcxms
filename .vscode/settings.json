@@ -5,5 +5,5 @@
     "fortran.fortls.directories": [
         "${workspaceFolder}/src/**",
     ],
-    "editor.inlineSuggest.enabled": false,
+    "editor.inlineSuggest.enabled": false
 }

@@ -44,6 +44,7 @@ qcxms_exe = executable(
   sources: prog,
   dependencies: qcxms_dep,
   install: install,
+  link_args: '-pg',
   link_language: 'fortran',
 )
 
@@ -58,5 +59,6 @@ if install
     install_dir: get_option('bindir'),
   )
 endif
+
 
 #  link_args: '-static'

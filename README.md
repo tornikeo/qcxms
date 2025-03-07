@@ -19,7 +19,7 @@ ninja -C build/
 
 ```bash
 sudo ln -s $(pwd)/build/qcxms /usr/bin
-sudo ln -s $(pwd)/build/getres /usr/bin
+sudo ln -s $(pwd)/bin/getres /usr/bin
 ```
 
 4. Copy over [EXAMPLE/CID/Tetrahydrofuran](./EXAMPLE/CID/Tetrahydrofuran) contents and run qcxms there.
