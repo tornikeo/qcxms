@@ -586,7 +586,8 @@ subroutine input(tstep,tmax,ntraj,etemp_in,Tinit, mchrg_prod,                  &
   !       MAX SIM. TIME
           if(index(line,'TMAX' ) /= 0)then            
              call readl(line,xx,nn)
-             tmax=int(xx(1))
+            !  tmax=int(xx(1))
+            tmax=xx(1) ! Allow it to be float
           endif
   !       INITIAL TEMP
           if(index(line,'TINIT') /= 0)then            

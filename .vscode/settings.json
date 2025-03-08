@@ -5,5 +5,8 @@
     "fortran.fortls.directories": [
         "${workspaceFolder}/src/**",
     ],
-    "editor.inlineSuggest.enabled": false
+    "editor.inlineSuggest.enabled": false,
+    "mesonbuild.configureOnOpen": true,
+    "C_Cpp.default.compileCommands": "/home/tornikeo/Documents/personal/forks/QCxMS/builddir/compile_commands.json",
+    "C_Cpp.default.configurationProvider": "mesonbuild.mesonbuild"
 }
