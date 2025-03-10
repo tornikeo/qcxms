@@ -1,41 +1,38 @@
 module get_settings
-  use mctc_env_accuracy, only : wp
-  implicit none
+   use mctc_env_accuracy, only: wp
+   implicit none
 
-  private
+   private
 
-  public  :: run_settings, collision_type
+   public  :: run_settings, collision_type
 
-  type  :: run_settings
+   type  :: run_settings
 
+      real(wp) :: tadd
+      real(wp) :: eimp
 
-    real(wp) :: tadd  
-    real(wp) :: eimp  
+      real(wp), allocatable :: xyzr(:, :, :)
+      real(wp), allocatable :: velor(:, :, :)
+      !real(wp),allocatable :: velof(:)
+      real(wp), allocatable :: eimpr(:)
+      real(wp), allocatable :: taddr(:)
+      real(wp), allocatable :: velofr(:, :)
 
-    real(wp),allocatable :: xyzr(:,:,:)
-    real(wp),allocatable :: velor(:,:,:)
-    !real(wp),allocatable :: velof(:)
-    real(wp),allocatable :: eimpr(:)
-    real(wp),allocatable :: taddr(:)
-    real(wp),allocatable :: velofr(:,:)
+   end type
 
-  end type
+   !type  :: charge
 
+   !  integer  :: mchrg = 0
+   !  integer  :: mchrg_prod
 
-  !type  :: charge
+   !  real(wp) :: chrgcont
 
-  !  integer  :: mchrg = 0
-  !  integer  :: mchrg_prod
+   !end type
 
-  !  real(wp) :: chrgcont  
+   type  :: collision_type
 
-  !end type
-
-  type  :: collision_type
-
-    integer :: set_coll
-    integer :: max_coll
-  end type
-
+      integer :: set_coll
+      integer :: max_coll
+   end type
 
 end module get_settings

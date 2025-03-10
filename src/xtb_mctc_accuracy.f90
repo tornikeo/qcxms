@@ -20,7 +20,6 @@ module xtb_mctc_accuracy
    implicit none
    public
 
-
    !> Single precision real numbers
    integer, parameter :: sp = selected_real_kind(6)
 
@@ -41,6 +40,5 @@ module xtb_mctc_accuracy
 
    !> Long length for integers
 !   integer, parameter :: i8 = selected_int_kind(18)
-
 
 end module xtb_mctc_accuracy

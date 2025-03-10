@@ -1,16 +1,16 @@
 module qcxms_utility
    use common1
    use newcommon
-   use mctc_io, only : to_symbol, read_structure, write_structure
-   use mctc_io_filetype, only : filetype
-   use mctc_io_structure, only : structure_type
-   use mctc_env_error, only : error_type
+   use mctc_io, only: to_symbol, read_structure, write_structure
+   use mctc_io_filetype, only: filetype
+   use mctc_io_structure, only: structure_type
+   use mctc_env_error, only: error_type
    use xtb_mctc_accuracy, only: wp
    use xtb_mctc_constants, only: kB
    use xtb_mctc_convert
    implicit none
 
-   contains
+contains
 
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    ! determine two MOs whose energies add to IEE edum; a third MO (index not used)
@@ -20,547 +20,539 @@ module qcxms_utility
    ! emo = orbital energy (eigenvalues)
    ! edum = total energy (ehomo + exc)
 
-   subroutine momap(ihomo,emo,edum,mo1,mo2)
-   
-      integer  :: ihomo,mo1,mo2,k,i1,i2 
+   subroutine momap(ihomo, emo, edum, mo1, mo2)
+
+      integer  :: ihomo, mo1, mo2, k, i1, i2
       integer  :: vmo
-   
-      real(wp) :: emo(*),edum,dmin,delta,dum
-   
-      k  = 0
+
+      real(wp) :: emo(*), edum, dmin, delta, dum
+
+      k = 0
       i1 = 0
       i2 = 0
-      dmin = huge(0.0_wp) 
-   
+      dmin = huge(0.0_wp)
+
       do while (k <= 5000)
 
-        mo1 = irand(ihomo) ! irand -> randomization function (see below) 
-        mo2 = irand(ihomo)
-        vmo = irand(ihomo/2) + ihomo
-        dum = emo(mo1)
+         mo1 = irand(ihomo) ! irand -> randomization function (see below)
+         mo2 = irand(ihomo)
+         vmo = irand(ihomo/2) + ihomo
+         dum = emo(mo1)
 
-        ! if electron is unpaired 
-        if ( mo2 > ihomo / 2 ) then
-           mo2 = 0
-        else
-           dum = dum + emo(mo2)
-        endif
+         ! if electron is unpaired
+         if (mo2 > ihomo/2) then
+            mo2 = 0
+         else
+            dum = dum + emo(mo2)
+         end if
 
-        dum = dum + emo(vmo)
-        delta = abs(dum - edum)
+         dum = dum + emo(vmo)
+         delta = abs(dum - edum)
 
-        if ( delta < dmin ) then
-           dmin = delta
-           i1 = mo1
-           i2 = mo2
-        endif
+         if (delta < dmin) then
+            dmin = delta
+            i1 = mo1
+            i2 = mo2
+         end if
 
-        k = k + 1
+         k = k + 1
 
-      enddo
-   
+      end do
+
       mo1 = i1
       mo2 = i2
-   
+
    end subroutine momap
-   
+
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    ! estimate the electronic temp in Fermi smearing for given IEE and ax
-   subroutine setetemp(nfrag,eimp,etemp)
-   
+   subroutine setetemp(nfrag, eimp, etemp)
+
       integer  :: nfrag
-   
-      real(wp) :: eimp,etemp
+
+      real(wp) :: eimp, etemp
       real(wp) :: tmp
-   
-      etemp =  5000. + 20000. * ax
-   
+
+      etemp = 5000.+20000.*ax
+
       if (eimp > 0 .and. nfrag <= 1) then
-   
-         tmp=max(eimp,0.0d0)
-   
+
+         tmp = max(eimp, 0.0d0)
+
          etemp = etemp + tmp*ieetemp
-   
-      endif
-   
+
+      end if
+
    end subroutine
-   
+
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    ! call the qc code
-   subroutine qccall(iprog,fout)
-   
+   subroutine qccall(iprog, fout)
+
       integer :: iprog
-   
-      character(len=* ) :: fout
+
+      character(len=*) :: fout
       character(len=80) :: atmp
-   
+
       calls = calls + 1
-   
-   ! DFTB+
-      if(iprog == 0) write(atmp,'(a,''dftb+ > '',a)') trim(path),trim(fout)
-   
-   ! TM
-      if(iprog == 2)then
-         if(shell == 1) write(atmp,'(''( '',a,''ridft > '',a,'' ) > & /dev/null'')') trim(path),trim(fout)
-         if(shell == 2) write(atmp,'(''ridft > '',a,'' 2> /dev/null'')')trim(fout)
-      endif
-   
-   ! ORCA
-      if(iprog == 3) write(atmp,'(''orca ORCA.INPUT > '',a)') trim(fout)
-   
-   ! MNDO99
-      if(iprog == 5) write(atmp,'(a,''mndo99 < inp > '',a)') trim(path),trim(fout)
-   
+
+      ! DFTB+
+      if (iprog == 0) write (atmp, '(a,''dftb+ > '',a)') trim(path), trim(fout)
+
+      ! TM
+      if (iprog == 2) then
+         if (shell == 1) write (atmp, '(''( '',a,''ridft > '',a,'' ) > & /dev/null'')') trim(path), trim(fout)
+         if (shell == 2) write (atmp, '(''ridft > '',a,'' 2> /dev/null'')') trim(fout)
+      end if
+
+      ! ORCA
+      if (iprog == 3) write (atmp, '(''orca ORCA.INPUT > '',a)') trim(fout)
+
+      ! MNDO99
+      if (iprog == 5) write (atmp, '(a,''mndo99 < inp > '',a)') trim(path), trim(fout)
+
       call execute_command_line(atmp)
-   
-   ! TM GRAD
-      if(iprog == 2)then
-         if(shell == 1) write(atmp,'(''( '',a,''rdgrad >> '',a,'' ) > & /dev/null'')') trim(path),trim(fout)
-         if(shell == 2) write(atmp,'(''rdgrad >> '',a,'' 2> /dev/null'')')trim(fout)
+
+      ! TM GRAD
+      if (iprog == 2) then
+         if (shell == 1) write (atmp, '(''( '',a,''rdgrad >> '',a,'' ) > & /dev/null'')') trim(path), trim(fout)
+         if (shell == 2) write (atmp, '(''rdgrad >> '',a,'' 2> /dev/null'')') trim(fout)
          call execute_command_line(atmp)
-      endif
-   
+      end if
+
    end subroutine
-   
-   
+
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    ! add a gaussian in imp energy spectrum r() at energy x, width 0.1 eV
    ! just plotting
-   subroutine gauss(r,x)
-   
+   subroutine gauss(r, x)
+
       integer :: j
-   
-      real(wp) :: r(1000),x
-      real(wp) :: xmi,xma,st,ee,edif,width
-   
-      xmi=0
-      xma=70
-      st=(xma-xmi)/1000
-      width=1/1.0**2
-      do j=1,1000
-         ee=xmi+j*st
-         edif=ee-x
-         r(j)=r(j)+exp(-width*edif**2)
-      enddo
-   
+
+      real(wp) :: r(1000), x
+      real(wp) :: xmi, xma, st, ee, edif, width
+
+      xmi = 0
+      xma = 70
+      st = (xma - xmi)/1000
+      width = 1/1.0**2
+      do j = 1, 1000
+         ee = xmi + j*st
+         edif = ee - x
+         r(j) = r(j) + exp(-width*edif**2)
+      end do
+
    end subroutine
-   
+
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    ! create Temporary TMP directories
    subroutine mdtmpdir(it)
       implicit none
-   
+
       integer  :: it
       character(len=80) :: fname
-   
-      if (it < 10000) write(fname,'(''mkdir TMPQCXMS/TMP.'',i4)') it
-      if (it < 1000)  write(fname,'(''mkdir TMPQCXMS/TMP.'',i3)') it
-      if (it < 100)   write(fname,'(''mkdir TMPQCXMS/TMP.'',i2)') it
-      if (it < 10)    write(fname,'(''mkdir TMPQCXMS/TMP.'',i1)') it
-   
+
+      if (it < 10000) write (fname, '(''mkdir TMPQCXMS/TMP.'',i4)') it
+      if (it < 1000) write (fname, '(''mkdir TMPQCXMS/TMP.'',i3)') it
+      if (it < 100) write (fname, '(''mkdir TMPQCXMS/TMP.'',i2)') it
+      if (it < 10) write (fname, '(''mkdir TMPQCXMS/TMP.'',i1)') it
+
       call execute_command_line(fname)
    end
-   
-   
+
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    subroutine copytb(it)
       implicit none
-   
+
       integer :: it
       character(len=80) :: fname
-   
-      if(it.ge.10000)stop 'error 1 inside copytb'
-   
-      if(it.ge.1000)then
-         write(fname,'(''cp qcxms.in TMPQCXMS/TMP.'',i4)')it
+
+      if (it .ge. 10000) stop 'error 1 inside copytb'
+
+      if (it .ge. 1000) then
+         write (fname, '(''cp qcxms.in TMPQCXMS/TMP.'',i4)') it
          call execute_command_line(fname)
-   !        write(fname,'(''cp charges.bin TMPQCXMS/TMP.'',i4)')it
-   !        call execute_command_line(fname)
-         write(fname,'(''cp coord TMPQCXMS/TMP.'',i4)')it
-         call execute_command_line(fname)
-         return
-      endif
-   
-      if(it.ge.100)then
-         write(fname,'(''cp qcxms.in TMPQCXMS/TMP.'',i3)')it
-         call execute_command_line(fname)
-         write(fname,'(''cp coord TMPQCXMS/TMP.'',i3)')it
+         !        write(fname,'(''cp charges.bin TMPQCXMS/TMP.'',i4)')it
+         !        call execute_command_line(fname)
+         write (fname, '(''cp coord TMPQCXMS/TMP.'',i4)') it
          call execute_command_line(fname)
          return
-      endif
-   
-      if(it.ge.10)then
-         write(fname,'(''cp qcxms.in TMPQCXMS/TMP.'',i2)')it
+      end if
+
+      if (it .ge. 100) then
+         write (fname, '(''cp qcxms.in TMPQCXMS/TMP.'',i3)') it
          call execute_command_line(fname)
-         write(fname,'(''cp coord TMPQCXMS/TMP.'',i2)')it
-         call execute_command_line(fname)
-         return
-      endif
-   
-      if(it.ge.0)then
-         write(fname,'(''cp qcxms.in TMPQCXMS/TMP.'',i1)')it
-         call execute_command_line(fname)
-         write(fname,'(''cp coord TMPQCXMS/TMP.'',i1)')it
+         write (fname, '(''cp coord TMPQCXMS/TMP.'',i3)') it
          call execute_command_line(fname)
          return
-      endif
-   
+      end if
+
+      if (it .ge. 10) then
+         write (fname, '(''cp qcxms.in TMPQCXMS/TMP.'',i2)') it
+         call execute_command_line(fname)
+         write (fname, '(''cp coord TMPQCXMS/TMP.'',i2)') it
+         call execute_command_line(fname)
+         return
+      end if
+
+      if (it .ge. 0) then
+         write (fname, '(''cp qcxms.in TMPQCXMS/TMP.'',i1)') it
+         call execute_command_line(fname)
+         write (fname, '(''cp coord TMPQCXMS/TMP.'',i1)') it
+         call execute_command_line(fname)
+         return
+      end if
+
       stop 'error 2 inside copytb'
-   
+
    end subroutine
-   
+
    subroutine copymop(it)
       implicit none
-   
+
       integer :: it
       character(len=80) :: fname
-   
-      if(it.ge.10000)stop 'error 1 inside copymop'
-   
-      if(it.ge.1000)then
-         write(fname,'(''cp qcxms.in TMPQCXMS/TMP.'',i4)')it
+
+      if (it .ge. 10000) stop 'error 1 inside copymop'
+
+      if (it .ge. 1000) then
+         write (fname, '(''cp qcxms.in TMPQCXMS/TMP.'',i4)') it
          call execute_command_line(fname)
-         write(fname,'(''cp inp.den TMPQCXMS/TMP.'',i4)')it
+         write (fname, '(''cp inp.den TMPQCXMS/TMP.'',i4)') it
          call execute_command_line(fname)
-         write(fname,'(''cp coord TMPQCXMS/TMP.'',i4)')it
-         call execute_command_line(fname)
-         return
-      endif
-   
-      if(it.ge.100)then
-         write(fname,'(''cp qcxms.in TMPQCXMS/TMP.'',i3)')it
-         call execute_command_line(fname)
-         write(fname,'(''cp inp.den TMPQCXMS/TMP.'',i3)')it
-         call execute_command_line(fname)
-         write(fname,'(''cp coord TMPQCXMS/TMP.'',i3)')it
+         write (fname, '(''cp coord TMPQCXMS/TMP.'',i4)') it
          call execute_command_line(fname)
          return
-      endif
-   
-      if(it.ge.10)then
-         write(fname,'(''cp qcxms.in TMPQCXMS/TMP.'',i2)')it
+      end if
+
+      if (it .ge. 100) then
+         write (fname, '(''cp qcxms.in TMPQCXMS/TMP.'',i3)') it
          call execute_command_line(fname)
-         write(fname,'(''cp inp.den TMPQCXMS/TMP.'',i2)')it
+         write (fname, '(''cp inp.den TMPQCXMS/TMP.'',i3)') it
          call execute_command_line(fname)
-         write(fname,'(''cp coord TMPQCXMS/TMP.'',i2)')it
-         call execute_command_line(fname)
-         return
-      endif
-   
-      if(it.ge.0)then
-         write(fname,'(''cp qcxms.in TMPQCXMS/TMP.'',i1)')it
-         call execute_command_line(fname)
-         write(fname,'(''cp inp.den TMPQCXMS/TMP.'',i1)')it
-         call execute_command_line(fname)
-         write(fname,'(''cp coord TMPQCXMS/TMP.'',i1)')it
+         write (fname, '(''cp coord TMPQCXMS/TMP.'',i3)') it
          call execute_command_line(fname)
          return
-      endif
-   
+      end if
+
+      if (it .ge. 10) then
+         write (fname, '(''cp qcxms.in TMPQCXMS/TMP.'',i2)') it
+         call execute_command_line(fname)
+         write (fname, '(''cp inp.den TMPQCXMS/TMP.'',i2)') it
+         call execute_command_line(fname)
+         write (fname, '(''cp coord TMPQCXMS/TMP.'',i2)') it
+         call execute_command_line(fname)
+         return
+      end if
+
+      if (it .ge. 0) then
+         write (fname, '(''cp qcxms.in TMPQCXMS/TMP.'',i1)') it
+         call execute_command_line(fname)
+         write (fname, '(''cp inp.den TMPQCXMS/TMP.'',i1)') it
+         call execute_command_line(fname)
+         write (fname, '(''cp coord TMPQCXMS/TMP.'',i1)') it
+         call execute_command_line(fname)
+         return
+      end if
+
       stop 'error 2 inside copymop'
-   
+
    end subroutine
-   
-   
+
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    subroutine copymsindo(it)
       implicit none
-   
+
       integer :: it
       character(len=80) :: fname
-   
-      if(it.ge.10000)stop 'error 1 inside copymsindo'
-   
-      if(it.ge.1000)then
-         write(fname,'(''cp qcxms.in TMPQCXMS/TMP.'',i4)')it
+
+      if (it .ge. 10000) stop 'error 1 inside copymsindo'
+
+      if (it .ge. 1000) then
+         write (fname, '(''cp qcxms.in TMPQCXMS/TMP.'',i4)') it
          call execute_command_line(fname)
-         write(fname,'(''cp DENSITY TMPQCXMS/TMP.'',i4)')it
+         write (fname, '(''cp DENSITY TMPQCXMS/TMP.'',i4)') it
          call execute_command_line(fname)
-         write(fname,'(''cp coord TMPQCXMS/TMP.'',i4)')it
-         call execute_command_line(fname)
-         return
-      endif
-   
-      if(it.ge.100)then
-         write(fname,'(''cp qcxms.in TMPQCXMS/TMP.'',i3)')it
-         call execute_command_line(fname)
-         write(fname,'(''cp DENSITY TMPQCXMS/TMP.'',i3)')it
-         call execute_command_line(fname)
-         write(fname,'(''cp coord TMPQCXMS/TMP.'',i3)')it
+         write (fname, '(''cp coord TMPQCXMS/TMP.'',i4)') it
          call execute_command_line(fname)
          return
-      endif
-   
-      if(it.ge.10)then
-         write(fname,'(''cp qcxms.in TMPQCXMS/TMP.'',i2)')it
+      end if
+
+      if (it .ge. 100) then
+         write (fname, '(''cp qcxms.in TMPQCXMS/TMP.'',i3)') it
          call execute_command_line(fname)
-         write(fname,'(''cp DENSITY TMPQCXMS/TMP.'',i2)')it
+         write (fname, '(''cp DENSITY TMPQCXMS/TMP.'',i3)') it
          call execute_command_line(fname)
-         write(fname,'(''cp coord TMPQCXMS/TMP.'',i2)')it
-         call execute_command_line(fname)
-         return
-      endif
-   
-      if(it.ge.0)then
-         write(fname,'(''cp qcxms.in TMPQCXMS/TMP.'',i1)')it
-         call execute_command_line(fname)
-         write(fname,'(''cp DENSITY TMPQCXMS/TMP.'',i1)')it
-         call execute_command_line(fname)
-         write(fname,'(''cp coord TMPQCXMS/TMP.'',i1)')it
+         write (fname, '(''cp coord TMPQCXMS/TMP.'',i3)') it
          call execute_command_line(fname)
          return
-      endif
-   
+      end if
+
+      if (it .ge. 10) then
+         write (fname, '(''cp qcxms.in TMPQCXMS/TMP.'',i2)') it
+         call execute_command_line(fname)
+         write (fname, '(''cp DENSITY TMPQCXMS/TMP.'',i2)') it
+         call execute_command_line(fname)
+         write (fname, '(''cp coord TMPQCXMS/TMP.'',i2)') it
+         call execute_command_line(fname)
+         return
+      end if
+
+      if (it .ge. 0) then
+         write (fname, '(''cp qcxms.in TMPQCXMS/TMP.'',i1)') it
+         call execute_command_line(fname)
+         write (fname, '(''cp DENSITY TMPQCXMS/TMP.'',i1)') it
+         call execute_command_line(fname)
+         write (fname, '(''cp coord TMPQCXMS/TMP.'',i1)') it
+         call execute_command_line(fname)
+         return
+      end if
+
       stop 'error 2 inside copymsindo'
-   
+
    end subroutine
-   
+
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    ! writing routine
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   subroutine wrstart(traj,mol,nat,xyzr,velor,velofr,eimpr,taddr)
+   subroutine wrstart(traj, mol, nat, xyzr, velor, velofr, eimpr, taddr)
 
-   ! traj is # traj
-   ! "nat" is # atoms
-   ! xyz coords
-   ! velor velocity
-   ! velofr is scaling factor
-   ! eimpr is energy impact electron ! eimp
-   ! taddr is temp add
-      integer  :: traj,nat
+      ! traj is # traj
+      ! "nat" is # atoms
+      ! xyz coords
+      ! velor velocity
+      ! velofr is scaling factor
+      ! eimpr is energy impact electron ! eimp
+      ! taddr is temp add
+      integer  :: traj, nat
       integer  :: j
       integer  :: io_wr_xyz, io_wr_info
-   
-      real(wp) :: xyzr (3,nat)
-      real(wp) :: velor(3,nat)
-      real(wp) :: velofr    (  nat)
-      real(wp) :: eimpr,taddr
-   
+
+      real(wp) :: xyzr(3, nat)
+      real(wp) :: velor(3, nat)
+      real(wp) :: velofr(nat)
+      real(wp) :: eimpr, taddr
+
       character(len=80) :: fname_xyz, fname_info
-   
+
       type(error_type), allocatable :: error
       type(structure_type) :: mol
 
       mol%xyz = xyzr
       mol%nat = nat
 
-      if(traj < 10000) write(fname_xyz,'(''TMPQCXMS/TMP.'',i4,''/start.xyz'')')traj
-      if(traj < 1000)  write(fname_xyz,'(''TMPQCXMS/TMP.'',i3,''/start.xyz'')')traj
-      if(traj < 100)   write(fname_xyz,'(''TMPQCXMS/TMP.'',i2,''/start.xyz'')')traj
-      if(traj < 10)    write(fname_xyz,'(''TMPQCXMS/TMP.'',i1,''/start.xyz'')')traj
-   
-      call write_structure(mol, fname_xyz, error, filetype%xyz) 
+      if (traj < 10000) write (fname_xyz, '(''TMPQCXMS/TMP.'',i4,''/start.xyz'')') traj
+      if (traj < 1000) write (fname_xyz, '(''TMPQCXMS/TMP.'',i3,''/start.xyz'')') traj
+      if (traj < 100) write (fname_xyz, '(''TMPQCXMS/TMP.'',i2,''/start.xyz'')') traj
+      if (traj < 10) write (fname_xyz, '(''TMPQCXMS/TMP.'',i1,''/start.xyz'')') traj
+
+      call write_structure(mol, fname_xyz, error, filetype%xyz)
 
       nat = mol%nat
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-      if(traj < 10000) write(fname_info,'(''TMPQCXMS/TMP.'',i4,''/qcxms.start'')')traj
-      if(traj < 1000)  write(fname_info,'(''TMPQCXMS/TMP.'',i3,''/qcxms.start'')')traj
-      if(traj < 100)   write(fname_info,'(''TMPQCXMS/TMP.'',i2,''/qcxms.start'')')traj
-      if(traj < 10)    write(fname_info,'(''TMPQCXMS/TMP.'',i1,''/qcxms.start'')')traj
+      if (traj < 10000) write (fname_info, '(''TMPQCXMS/TMP.'',i4,''/qcxms.start'')') traj
+      if (traj < 1000) write (fname_info, '(''TMPQCXMS/TMP.'',i3,''/qcxms.start'')') traj
+      if (traj < 100) write (fname_info, '(''TMPQCXMS/TMP.'',i2,''/qcxms.start'')') traj
+      if (traj < 10) write (fname_info, '(''TMPQCXMS/TMP.'',i1,''/qcxms.start'')') traj
 
-      open(file=fname_info, newunit= io_wr_info)
-      write(io_wr_info,'(i4)') traj
-      write(io_wr_info,'(D22.14)') eimpr
-      write(io_wr_info,'(D22.14)') taddr
+      open (file=fname_info, newunit=io_wr_info)
+      write (io_wr_info, '(i4)') traj
+      write (io_wr_info, '(D22.14)') eimpr
+      write (io_wr_info, '(D22.14)') taddr
 
-      do j=1,nat
-         write(io_wr_info,'(7D22.14)') velor(1:3,j),velofr(j)
-      enddo
+      do j = 1, nat
+         write (io_wr_info, '(7D22.14)') velor(1:3, j), velofr(j)
+      end do
 
-      close(io_wr_info)
-   
+      close (io_wr_info)
+
    end subroutine wrstart
-   
+
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  ! read qcxms.start file
+   ! read qcxms.start file
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  subroutine rdstart(itrj,nat,velo,velof,tadd,eimp)
-  
-     integer  :: itrj,nat
-     integer  :: j,ndum
-     integer  :: io_info, io_xyz
-     integer  :: ierror
-      integer,allocatable  :: iat (:)
+   subroutine rdstart(itrj, nat, velo, velof, tadd, eimp)
 
-     !real(wp) :: xyz (3,nat)
-     real(wp) :: velo(3,nat)
-     real(wp) :: velof   (nat)
-     real(wp), optional :: tadd
-     real(wp), optional :: eimp
-  
-     character(len=80) :: fname
+      integer  :: itrj, nat
+      integer  :: j, ndum
+      integer  :: io_info, io_xyz
+      integer  :: ierror
+      integer, allocatable  :: iat(:)
 
-     type(error_type), allocatable :: error
-     !type(structure_type), intent(out) :: mol
+      !real(wp) :: xyz (3,nat)
+      real(wp) :: velo(3, nat)
+      real(wp) :: velof(nat)
+      real(wp), optional :: tadd
+      real(wp), optional :: eimp
 
-     !call read_structure(mol, 'start.xyz', error, filetype%xyz)
+      character(len=80) :: fname
 
-     !ndum = mol%nat
-     !if (ndum /= nat) stop '- error in rdstart -'
+      type(error_type), allocatable :: error
+      !type(structure_type), intent(out) :: mol
+
+      !call read_structure(mol, 'start.xyz', error, filetype%xyz)
+
+      !ndum = mol%nat
+      !if (ndum /= nat) stop '- error in rdstart -'
      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-     fname='qcxms.start'
-  
-     open(file=fname, newunit=io_info, status='old', &
-       action='read', iostat=ierror)
+      fname = 'qcxms.start'
 
-     if(ierror > 0) stop ' - Missing qcxms.start file! -'
+      open (file=fname, newunit=io_info, status='old', &
+            action='read', iostat=ierror)
 
-     read (io_info,*) itrj
-     if(present(eimp)) read (io_info,'(D22.14)') eimp
-     if(present(tadd)) read (io_info,'(D22.14)') tadd
+      if (ierror > 0) stop ' - Missing qcxms.start file! -'
 
-     do j = 1, nat
-        read (io_info,'(7D22.14)') velo(1:3,j), velof(j)
-     enddo
- 
-     close(io_info)
+      read (io_info, *) itrj
+      if (present(eimp)) read (io_info, '(D22.14)') eimp
+      if (present(tadd)) read (io_info, '(D22.14)') tadd
 
+      do j = 1, nat
+         read (io_info, '(7D22.14)') velo(1:3, j), velof(j)
+      end do
 
-  end subroutine rdstart
-   
+      close (io_info)
+
+   end subroutine rdstart
+
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    ! calculate # of valence electrons in mopac and dftb
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   subroutine valel(at,el)
-   
+   subroutine valel(at, el)
+
       integer  :: at
       real(wp) :: el
-   
-      if(at.le.2)then
-         el=at
-      elseif(at.le.10)then
-         el=at-2
-      elseif(at.le.18)then
-         el=at-10
-      elseif(at.le.36)then
-         el=at-18
-         if(at.gt.28) el=at-28
-      endif
-   
+
+      if (at .le. 2) then
+         el = at
+      elseif (at .le. 10) then
+         el = at - 2
+      elseif (at .le. 18) then
+         el = at - 10
+      elseif (at .le. 36) then
+         el = at - 18
+         if (at .gt. 28) el = at - 28
+      end if
+
    end subroutine valel
 
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    ! spin value of molecule
    ! returns -1 if no electrons are found (e.g. H+)
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   subroutine getspin(nat,ic,chrg,isp)
-   
-      integer nat,i,j,chrg,isp,ic(nat)
-   
-      j=0
-   
+   subroutine getspin(nat, ic, chrg, isp)
+
+      integer nat, i, j, chrg, isp, ic(nat)
+
+      j = 0
+
       do i = 1, nat
          j = j + ic(i)
-      enddo
-   
+      end do
+
       j = j - abs(chrg)
-      isp = 1 + mod(j,2)
-      
-      if ( j < 1 ) isp = -1
-   
+      isp = 1 + mod(j, 2)
+
+      if (j < 1) isp = -1
+
    end subroutine getspin
-   
+
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    ! Boltzmann population for temp. t and energies e
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-   subroutine boltz(units,nfrag,mchrg,temp,ip,fragchrg2)
-   
-      integer  :: nfrag,units,i, j, mchrg
-   
-      real(wp),intent(in)  :: ip(nfrag,mchrg)
-      real(wp),intent(out) :: fragchrg2(nfrag,mchrg)
-      real(wp) :: temp,f,esum,const
-   
+   subroutine boltz(units, nfrag, mchrg, temp, ip, fragchrg2)
+
+      integer  :: nfrag, units, i, j, mchrg
+
+      real(wp), intent(in)  :: ip(nfrag, mchrg)
+      real(wp), intent(out) :: fragchrg2(nfrag, mchrg)
+      real(wp) :: temp, f, esum, const
+
       ! kcal/mol
-      if (units==1) const = autokcal
+      if (units == 1) const = autokcal
       ! eV
-      if (units==2) const = autoev
-   
-      f = temp * kB * const
+      if (units == 2) const = autoev
+
+      f = temp*kB*const
 
       esum = 0
-   
+
       do i = 1, nfrag
-        do j = 1, mchrg
-          esum = esum + exp(-ip(i,j)/f)
-        enddo
-      enddo
-   
+         do j = 1, mchrg
+            esum = esum + exp(-ip(i, j)/f)
+         end do
+      end do
+
       do i = 1, nfrag
-        do j = 1, mchrg
-          fragchrg2(i,j) = exp(-ip(i,j)/f) / esum
-        enddo
-      enddo
-   
+         do j = 1, mchrg
+            fragchrg2(i, j) = exp(-ip(i, j)/f)/esum
+         end do
+      end do
+
    end subroutine boltz
-   
+
    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
    ! integer random number n=<irand<=1
    function irand(n) result(rnd)
-   integer  :: n, rnd
-   real(wp) :: x,nx
-   
-   call random_number(x)
-   nx = n * x + 1
-   rnd = int(nx)
-   if ( rnd > n ) rnd = n
-   
+      integer  :: n, rnd
+      real(wp) :: x, nx
+
+      call random_number(x)
+      nx = n*x + 1
+      rnd = int(nx)
+      if (rnd > n) rnd = n
+
    end function irand
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+   subroutine center_of_geometry(nuc, xyz, cg)
+
+      integer, intent(in) :: nuc
+      integer :: j
+      integer :: normmass
+
+      real(wp), intent(in) :: xyz(3, nuc)
+      real(wp), intent(out) :: cg(3)
+
+      do j = 1, nuc
+
+         cg(:) = cg(:) + 1*xyz(:, j)
+
+         normmass = normmass + 1
+      end do
+
+      cg(1) = cg(1)/normmass
+      cg(2) = cg(2)/normmass
+      cg(3) = cg(3)/normmass
+
+   end subroutine center_of_geometry
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine center_of_geometry(nuc, xyz, cg)
+!Calculates center of mass and returns it in variable cm
+   subroutine center_of_mass(nuc, mass, xyz, cm)
 
-  integer, intent(in) :: nuc
-  integer :: j
-  integer :: normmass
+      integer  :: i, nuc
 
-  real(wp), intent(in) :: xyz(3,nuc)
-  real(wp), intent(out) :: cg(3)
+      real(wp) :: totmass
+      real(wp), intent(in) :: xyz(3, nuc), mass(nuc)
+      real(wp), intent(out) :: cm(3)
 
-  do j = 1, nuc
-  
-    cg(:) = cg(:) + 1 * xyz(:,j)
-  
-    normmass  = normmass + 1 
-  enddo
-  
-  cg(1) = cg(1) / normmass
-  cg(2) = cg(2) / normmass
-  cg(3) = cg(3) / normmass
+      totmass = 0.0d0
+      cm = 0.0d0
+      do i = 1, nuc
+         cm(1) = cm(1) + mass(i)*xyz(1, i)
+         cm(2) = cm(2) + mass(i)*xyz(2, i)
+         cm(3) = cm(3) + mass(i)*xyz(3, i)
+         totmass = totmass + mass(i)
+      end do
+      cm(1) = cm(1)/totmass
+      cm(2) = cm(2)/totmass
+      cm(3) = cm(3)/totmass
 
-end subroutine center_of_geometry
+   end subroutine center_of_mass
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-!Calculates center of mass and returns it in variable cm      
-subroutine center_of_mass(nuc,mass,xyz,cm)
-
-  integer  :: i, nuc
- 
-  real(wp) :: totmass
-  real(wp),intent(in) :: xyz(3,nuc), mass(nuc)
-  real(wp),intent(out) :: cm(3)
- 
- 
-  totmass = 0.0d0
-  cm = 0.0d0
-  do i = 1,nuc
-     cm(1) = cm(1) + mass(i) * xyz(1,i)
-     cm(2) = cm(2) + mass(i) * xyz(2,i)
-     cm(3) = cm(3) + mass(i) * xyz(3,i)
-     totmass  = totmass + mass(i)
-  end do
-  cm(1) = cm(1) / totmass
-  cm(2) = cm(2) / totmass
-  cm(3) = cm(3) / totmass
-
-end subroutine center_of_mass
-
-
-   
 end module qcxms_utility

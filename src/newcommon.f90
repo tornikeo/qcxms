@@ -1,13 +1,13 @@
 module newcommon
-  implicit none
+   implicit none
 
-  integer      :: calls
+   integer      :: calls
 
-  character(len=80) :: path = '/usr/local/bin/'
-  character(len=80) :: xtbpath = '$HOME/.XTBPARAM/'
-  character(len=80) :: xtbhome
-  character(len=20) :: solvent
+   character(len=80) :: path = '/usr/local/bin/'
+   character(len=80) :: xtbpath = '$HOME/.XTBPARAM/'
+   character(len=80) :: xtbhome
+   character(len=20) :: solvent
 
-  logical  :: Verbose
+   logical  :: Verbose
 
 end module newcommon

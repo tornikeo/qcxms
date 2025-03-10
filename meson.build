@@ -60,5 +60,4 @@ if install
   )
 endif
 
-
 #  link_args: '-static'

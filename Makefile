@@ -3,9 +3,10 @@ SRC=/home/tornikeo/Documents/personal/forks/QCxMS/src/*.f90
 PWD=$(shell pwd)
 
 default:
+	clear
 	meson setup build --reconfigure -Db_coverage=true -Dc_args=-Og
-	ninja coverage -C build/
-	sudo ln -sf $(PWD)/build/qcxms /usr/bin
+	meson compile -C build 
+	# sudo ln -sf $(PWD)/build/qcxms /usr/bin
 
 install:
 	git pull --recurse-submodules

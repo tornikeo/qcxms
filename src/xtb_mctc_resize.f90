@@ -17,12 +17,11 @@
 
 !> Reallocation implementation for resizing arrays
 module xtb_mctc_resize
-   use xtb_mctc_accuracy, only : wp
+   use xtb_mctc_accuracy, only: wp
    implicit none
    private
 
    public :: resize
-
 
    !> Overloaded resize interface
    interface resize
@@ -32,156 +31,150 @@ module xtb_mctc_resize
       module procedure :: resizeReal2d
    end interface resize
 
-
 contains
 
-
 !> Reallocate list of integers
-pure subroutine resizeInt(var, n)
+   pure subroutine resizeInt(var, n)
 
-   !> TODO
-   integer, allocatable, intent(inout) :: var(:)
+      !> TODO
+      integer, allocatable, intent(inout) :: var(:)
 
-   !> TODO
-   integer, intent(in), optional :: n
+      !> TODO
+      integer, intent(in), optional :: n
 
-   integer, allocatable :: tmp(:)
-   integer :: length, currentLength
+      integer, allocatable :: tmp(:)
+      integer :: length, currentLength
 
-   currentLength = size(var)
-   if (currentLength > 0) then
-      if (present(n)) then
-         if (n <= currentLength) return
-         length = n
+      currentLength = size(var)
+      if (currentLength > 0) then
+         if (present(n)) then
+            if (n <= currentLength) return
+            length = n
+         else
+            length = currentLength + currentLength/2 + 1
+         end if
+         allocate (tmp(length), source=0)
+         tmp(:currentLength) = var(:currentLength)
+         deallocate (var)
+         call move_alloc(tmp, var)
       else
-         length = currentLength + currentLength/2 + 1
-      endif
-      allocate(tmp(length), source=0)
-      tmp(:currentLength) = var(:currentLength)
-      deallocate(var)
-      call move_alloc(tmp, var)
-   else
-      if (present(n)) then
-         length = n
-      else
-         length = 64
-      endif
-      allocate(var(length), source=0)
-   endif
+         if (present(n)) then
+            length = n
+         else
+            length = 64
+         end if
+         allocate (var(length), source=0)
+      end if
 
-end subroutine resizeInt
-
+   end subroutine resizeInt
 
 !> Reallocate list of characters
-pure subroutine resizeChar(var, n)
+   pure subroutine resizeChar(var, n)
 
-   !> TODO
-   character(len=*), allocatable, intent(inout) :: var(:)
+      !> TODO
+      character(len=*), allocatable, intent(inout) :: var(:)
 
-   !> TODO
-   integer, intent(in), optional :: n
+      !> TODO
+      integer, intent(in), optional :: n
 
-   character(len=:), allocatable :: tmp(:)
-   integer :: length, currentLength
+      character(len=:), allocatable :: tmp(:)
+      integer :: length, currentLength
 
-   currentLength = size(var)
-   if (currentLength > 0) then
-      if (present(n)) then
-         if (n <= currentLength) return
-         length = n
+      currentLength = size(var)
+      if (currentLength > 0) then
+         if (present(n)) then
+            if (n <= currentLength) return
+            length = n
+         else
+            length = currentLength + currentLength/2 + 1
+         end if
+         allocate (tmp(length), mold=var)
+         tmp(:currentLength) = var(:currentLength)
+         deallocate (var)
+         call move_alloc(tmp, var)
       else
-         length = currentLength + currentLength/2 + 1
-      endif
-      allocate(tmp(length), mold=var)
-      tmp(:currentLength) = var(:currentLength)
-      deallocate(var)
-      call move_alloc(tmp, var)
-   else
-      if (present(n)) then
-         length = n
-      else
-         length = 64
-      endif
-      allocate(var(length), source=' ')
-   endif
+         if (present(n)) then
+            length = n
+         else
+            length = 64
+         end if
+         allocate (var(length), source=' ')
+      end if
 
-end subroutine resizeChar
-
+   end subroutine resizeChar
 
 !> Reallocate list of reals
-pure subroutine resizeReal(var, n)
+   pure subroutine resizeReal(var, n)
 
-   !> TODO
-   real(wp), allocatable, intent(inout) :: var(:)
+      !> TODO
+      real(wp), allocatable, intent(inout) :: var(:)
 
-   !> TODO
-   integer, intent(in), optional :: n
+      !> TODO
+      integer, intent(in), optional :: n
 
-   real(wp), allocatable :: tmp(:)
-   integer :: length, order, currentLength
+      real(wp), allocatable :: tmp(:)
+      integer :: length, order, currentLength
 
-   currentLength = size(var)
-   if (currentLength > 0) then
-      if (present(n)) then
-         if (n <= currentLength) return
-         length = n
+      currentLength = size(var)
+      if (currentLength > 0) then
+         if (present(n)) then
+            if (n <= currentLength) return
+            length = n
+         else
+            length = currentLength + currentLength/2 + 1
+         end if
+         allocate (tmp(length), source=0.0_wp)
+         tmp(:currentLength) = var(:currentLength)
+         deallocate (var)
+         call move_alloc(tmp, var)
       else
-         length = currentLength + currentLength/2 + 1
-      endif
-      allocate(tmp(length), source=0.0_wp)
-      tmp(:currentLength) = var(:currentLength)
-      deallocate(var)
-      call move_alloc(tmp, var)
-   else
-      if (present(n)) then
-         length = n
-      else
-         length = 64
-      endif
-      allocate(var(length), source=0.0_wp)
-   endif
+         if (present(n)) then
+            length = n
+         else
+            length = 64
+         end if
+         allocate (var(length), source=0.0_wp)
+      end if
 
-end subroutine resizeReal
-
+   end subroutine resizeReal
 
 !> Reallocate list of reals
-pure subroutine resizeReal2d(var, n)
+   pure subroutine resizeReal2d(var, n)
 
-   !> TODO
-   real(wp), allocatable, intent(inout) :: var(:,:)
+      !> TODO
+      real(wp), allocatable, intent(inout) :: var(:, :)
 
-   !> TODO
-   integer, intent(in), optional :: n(2)
+      !> TODO
+      integer, intent(in), optional :: n(2)
 
-   real(wp), allocatable :: tmp(:,:)
-   integer :: length, order, currentLength
+      real(wp), allocatable :: tmp(:, :)
+      integer :: length, order, currentLength
 
-   currentLength = size(var, 2)
-   if (currentLength > 0) then
-      if (present(n)) then
-         if (n(2) <= currentLength) return
-         order = n(1)
-         length = n(2)
+      currentLength = size(var, 2)
+      if (currentLength > 0) then
+         if (present(n)) then
+            if (n(2) <= currentLength) return
+            order = n(1)
+            length = n(2)
+         else
+            length = currentLength + currentLength/2 + 1
+            order = size(var, 1)
+         end if
+         allocate (tmp(order, length), source=0.0_wp)
+         tmp(:, :currentLength) = var(:, :currentLength)
+         deallocate (var)
+         call move_alloc(tmp, var)
       else
-         length = currentLength + currentLength/2 + 1
-         order = size(var, 1)
-      endif
-      allocate(tmp(order, length), source=0.0_wp)
-      tmp(:, :currentLength) = var(:, :currentLength)
-      deallocate(var)
-      call move_alloc(tmp, var)
-   else
-      if (present(n)) then
-         order = n(1)
-         length = n(2)
-      else
-         order = 3
-         length = 64
-      endif
-      allocate(var(order,length), source=0.0_wp)
-   endif
+         if (present(n)) then
+            order = n(1)
+            length = n(2)
+         else
+            order = 3
+            length = 64
+         end if
+         allocate (var(order, length), source=0.0_wp)
+      end if
 
-end subroutine resizeReal2d
-
+   end subroutine resizeReal2d
 
 end module xtb_mctc_resize
