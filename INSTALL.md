@@ -11,8 +11,8 @@ git pull --recurse-submodules
 sudo apt install libopenblas-dev -y
 sudo apt-get install lcov -y
 
-meson setup build --reconfigure
-ninja -v -C build/
+meson setup build --reconfigure -Db_coverage=true -Dc_args=-Og
+ninja coverage -C build/
 
 sudo ln -sf $(pwd)/build/qcxms /usr/bin
 sudo ln -sf $(pwd)/bin/getres /usr/bin

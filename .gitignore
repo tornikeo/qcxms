@@ -36,3 +36,5 @@ paper
 book
 runs
 build.log
+workdir
+TMP.*/*
