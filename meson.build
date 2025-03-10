@@ -44,7 +44,7 @@ qcxms_exe = executable(
   sources: prog,
   dependencies: qcxms_dep,
   install: install,
-  link_args: ['-pg','-lgcov'],
+  # link_args: ['-pg','-lgcov'],
   link_language: 'fortran',
 )
 
@@ -60,4 +60,10 @@ if install
   )
 endif
 
-#  link_args: '-static'
+test('Check output', 
+  qcxms_exe, 
+  args: ['--prod'],
+  suite: 'qcxms', 
+  timeout: 10,
+  workdir : meson.source_root() + '/TMP.1'
+)
