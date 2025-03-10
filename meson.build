@@ -60,10 +60,11 @@ if install
   )
 endif
 
+# Test qcxms in one of the directories
 test('Check output', 
   qcxms_exe, 
   args: ['--prod'],
   suite: 'qcxms', 
-  timeout: 10,
-  workdir : meson.source_root() + '/TMP.1'
+  # timeout: 10,
+  workdir : meson.source_root() + '/tests/ei_sample_trajectory'
 )

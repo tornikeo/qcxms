@@ -7,8 +7,7 @@ default:
 	meson setup build --reconfigure -Db_coverage=true -Dc_args=-Og
 	meson compile -C build
 	meson test -C build
-	# meson 
-	# sudo ln -sf $(PWD)/build/qcxms /usr/bin
+	meson test -C build --suite qcxms --verbose -t 0
 
 install:
 	git pull --recurse-submodules
