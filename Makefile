@@ -1,13 +1,14 @@
-GCOV=/usr/bin/gcov
+GCOV=/usr/bin/gcov-13
 SRC=/home/tornikeo/Documents/personal/forks/QCxMS/src/*.f90
 PWD=$(shell pwd)
+CC=gfortran-13
 
 default:
 	clear
-	meson setup build --reconfigure -Db_coverage=true -Dc_args=-Og
+	meson setup build --reconfigure -Db_coverage=true -Dc_args=-Og,-w 
 	meson compile -C build
-	meson test -C build
 	meson test -C build --suite qcxms --verbose -t 0
+	ninja coverage-html -C build
 
 install:
 	git pull --recurse-submodules

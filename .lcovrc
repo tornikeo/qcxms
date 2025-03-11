@@ -1,0 +1,4 @@
+#geninfo_gcov_tool=/usr/bin/gcov-10
+#gcov_tool=/usr/bin/gcov-10
+ignore_errors=version,unused
+include='*.fh'
