@@ -1,11 +1,11 @@
-GCOV=/usr/bin/gcov-13
-SRC=/home/tornikeo/Documents/personal/forks/QCxMS/src/*.f90
-PWD=$(shell pwd)
-CC=gfortran-13
+# GCOV=/usr/bin/gcov-13
+# SRC=/home/tornikeo/Documents/personal/forks/QCxMS/src/*.f90
+# PWD=$(shell pwd)
+# CC=/etc/alternatives/cc
 
 default:
 	clear
-	meson setup build --reconfigure -Db_coverage=true -Dc_args=-Og,-w 
+	meson setup build --reconfigure -Db_coverage=true -Dc_args=-Og -Dc_args=-w
 	meson compile -C build
 	meson test -C build --suite qcxms --verbose -t 0
 	ninja coverage-html -C build
@@ -18,7 +18,6 @@ install:
 	pip install cmake
 	sudo apt install libopenblas-dev -y
 	sudo apt-get install lcov -y
-
 run:
 	export XTBHOME="$(PWD)/.XTBHOME"
 	mkdir -p workdir

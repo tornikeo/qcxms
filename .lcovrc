@@ -1,4 +1,13 @@
 #geninfo_gcov_tool=/usr/bin/gcov-10
 #gcov_tool=/usr/bin/gcov-10
-ignore_errors=version,unused
-include='*.fh'
+ignore_errors=empty,version,unused,mismatch
+# include=**/*.f90,
+# include=**/*.f90
+stop_on_error = 0
+include=src
+include=subprojects/**/*.f90
+geninfo_external = 1
+geninfo_capture_all = 1
+
+# include=subprojects/tblite/src/tblite
+# include=subprojects/tblite/src/**/*.f90
