@@ -1,14 +1,28 @@
-# GCOV=/usr/bin/gcov-13
 # SRC=/home/tornikeo/Documents/personal/forks/QCxMS/src/*.f90
 # PWD=$(shell pwd)
-# CC=/etc/alternatives/cc
+# GCOV=/usr/bin/gcov-13
+CC=/usr/bin/gcc-13
+FC=/usr/bin/gfortran-13
+
 
 default:
 	clear
-	meson setup build --reconfigure -Db_coverage=true -Dc_args=-Og -Dc_args=-w
-	meson compile -C build
+	export CC=$(CC)
+	export FC=$(FC)
+	rm -rf build
+	meson setup build --reconfigure -Db_coverage=true -Dc_args='-Og -w -fprofile-arcs -ftest-coverage -pg -g'
+	meson compile -C build > /dev/null # I don't care about warnings. And meson can't disable subproject warnings
 	meson test -C build --suite qcxms --verbose -t 0
-	ninja coverage-html -C build
+	ninja coverage-html -C build # This will fail!
+coverage:
+	cd build
+	lcov --extract meson-logs/coverage.info.raw \
+		**/*.f90 \
+		--rc branch_coverage=1 \
+		--output-file meson-logs/coverage.info \
+		--config-file ../.lcovrc \
+		--ignore-errors unused
+	genhtml --output-directory coveragereport meson-logs/coverage.info
 
 install:
 	git pull --recurse-submodules
