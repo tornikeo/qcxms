@@ -4,6 +4,7 @@ ignore_errors = unused
 gcov_tool = /usr/bin/gcov-13
 geninfo_gcov_tool = /usr/bin/gcov-13
 include = **/*.f90
+branch_coverage = 1
 # include = **/*.f90
 # stop_on_error = 0
 # include= **/*.f90

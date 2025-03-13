@@ -11,6 +11,7 @@ message('Fortran compiler ID: ' + fc_id)
 if fc_id == 'gcc'
   add_project_arguments(
     '-ffree-line-length-none',
+    '-Wconversion',
     # '-fbacktrace',
     # '-fimplicit-none',
     # '-fcheck=all',

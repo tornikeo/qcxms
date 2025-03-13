@@ -15,7 +15,7 @@ module common1
    integer  :: grid_orca
    !integer  ::  grid_tmol
    integer  :: nproc_orca
-   integer  :: iseed(1)
+   integer  :: iseed(8) ! random_seed complains in case this is iseed(1), and not iseed(8)
 
    real(wp) ::  a1, a2, s8
    real(wp) ::  ax

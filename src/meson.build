@@ -54,5 +54,5 @@ srcs += files(
 )
 
 prog += files(
-  'main.F90',
+  'main.f90',
 )

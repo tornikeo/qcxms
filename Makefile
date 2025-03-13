@@ -9,20 +9,24 @@ default:
 	clear
 	export CC=$(CC)
 	export FC=$(FC)
-	rm -rf build
-	meson setup build --reconfigure -Db_coverage=true -Dc_args='-Og -w -fprofile-arcs -ftest-coverage -pg -g'
-	meson compile -C build > /dev/null # I don't care about warnings. And meson can't disable subproject warnings
-	meson test -C build --suite qcxms --verbose -t 0
-	ninja coverage-html -C build # This will fail!
+	rm -rf builddir
+	meson setup builddir --reconfigure -Db_coverage=true -Dc_args='-Og -w -fprofile-arcs -ftest-coverage -pg -g'
+	meson compile -C builddir
+	meson test -C builddir --suite qcxms --verbose -t 0
+	ninja coverage-html -C builddir
+	lcov --extract builddir/meson-logs/coverage.info.raw \
+		--output-file builddir/meson-logs/coverage.info \
+		--config-file .lcovrc \
+		--ignore-errors unused \
+		**/*.f90
+	genhtml --output-directory builddir/coveragereport \
+		--show-details \
+		--legend \
+		--num-spaces 2 \
+		--frames \
+		builddir/meson-logs/coverage.info
 coverage:
-	cd build
-	lcov --extract meson-logs/coverage.info.raw \
-		**/*.f90 \
-		--rc branch_coverage=1 \
-		--output-file meson-logs/coverage.info \
-		--config-file ../.lcovrc \
-		--ignore-errors unused
-	genhtml --output-directory coveragereport meson-logs/coverage.info
+	
 
 install:
 	git pull --recurse-submodules
