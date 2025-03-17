@@ -45,7 +45,7 @@ qcxms_exe = executable(
   sources: prog,
   dependencies: qcxms_dep,
   install: install,
-  # link_args: ['-pg','-lgcov'],
+  link_args: ['-pg','-lgcov'],
   link_language: 'fortran',
 )
 
