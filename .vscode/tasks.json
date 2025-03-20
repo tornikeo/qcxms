@@ -15,6 +15,13 @@
             "options": {"cwd": "${workspaceFolder}"},
             "dependsOn": ["mesonSetupBuild"],
             "problemMatcher": []
+        },
+        { // make coverage appear automatically
+            "label": "Watch coverage on open",
+            "command": "${command:coverage-gutters.watchCoverageAndVisibleEditors}",
+            "runOptions": {
+                "runOn": "folderOpen"
+            }
         }
     ]
 }

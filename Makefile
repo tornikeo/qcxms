@@ -3,20 +3,16 @@
 # GCOV=/usr/bin/gcov-13
 CC=/usr/bin/gcc-13
 FC=/usr/bin/gfortran-13
-# TODO:
-# 1. 
+# Disabling openmp a lot faster for some reason
+export OMP_NUM_THREADS=1
 
 default:
 	clear
-	export CC=$(CC)
-	export FC=$(FC)
-	export OMP_NUM_THREADS=8
 	rm -rf builddir
-	meson setup builddir --wipe -Db_coverage=true -Dc_args='-g3 -pg -O0 -w'
+	meson setup builddir --wipe -Db_coverage=true -Dc_args='-g3 -pg -g -O0 -w'
 	meson compile -C builddir --verbose
 	meson test -C builddir --suite qcxms --verbose -t 0
 	ninja coverage-html -C builddir
-	
 	lcov --extract builddir/meson-logs/coverage.info.raw \
 		--output-file builddir/meson-logs/coverage.info \
 		--config-file .lcovrc \
@@ -28,12 +24,11 @@ default:
 		--num-spaces 2 \
 		--frames \
 		--branch-coverage \
-		--dark-mode \
 		builddir/meson-logs/coverage.info
 	open builddir/coveragereport/index.html
-	gprof builddir/qcxms ./tests/ei_sample_trajectory/gmon.out > profiling_results.txt
-	# gprof2dot ./profiling_results.txt | dot -Tpng -o profiling.png
-	gprof -l -A builddir/qcxms tests/ei_sample_trajectory/gmon.out > builddir/profile.txt
+	gprof builddir/qcxms ./tests/ei_sample_trajectory/gmon.out > builddir/profile.txt
+	gprof2dot builddir/profile.txt | dot -Tpng -o builddir/profiling.png
+	# gprof -l -A builddir/qcxms tests/ei_sample_trajectory/gmon.out > builddir/profile.txt
 coverage:
 	
 
