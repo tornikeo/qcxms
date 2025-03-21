@@ -1,17 +1,20 @@
 # SRC=/home/tornikeo/Documents/personal/forks/QCxMS/src/*.f90
 # PWD=$(shell pwd)
 # GCOV=/usr/bin/gcov-13
-CC=/usr/bin/gcc-13
-FC=/usr/bin/gfortran-13
 # Disabling openmp a lot faster for some reason
+export CC=/usr/bin/gcc-13
+export FC=/usr/bin/gfortran-13
 export OMP_NUM_THREADS=1
+export OMP_SCHEDULE=dynamic
+export OMP_MAX_ACTIVE_LEVELS=1
 
 default:
 	clear
-	rm -rf builddir
-	meson setup builddir --wipe -Db_coverage=true -Dc_args='-g3 -pg -g -O0 -w'
+	# meson setup builddir -Dc_args='-g3 -pg -g -O0 -w'
+	meson setup builddir -Db_coverage=true -Dbuildtype=debugoptimized -Dc_args='-g3 -pg -g -O0 -w' --wipe
 	meson compile -C builddir --verbose
 	meson test -C builddir --suite qcxms --verbose -t 0
+coverage:
 	ninja coverage-html -C builddir
 	lcov --extract builddir/meson-logs/coverage.info.raw \
 		--output-file builddir/meson-logs/coverage.info \
@@ -29,8 +32,6 @@ default:
 	gprof builddir/qcxms ./tests/ei_sample_trajectory/gmon.out > builddir/profile.txt
 	gprof2dot builddir/profile.txt | dot -Tpng -o builddir/profiling.png
 	# gprof -l -A builddir/qcxms tests/ei_sample_trajectory/gmon.out > builddir/profile.txt
-coverage:
-	
 
 install:
 	git pull --recurse-submodules
