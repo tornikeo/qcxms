@@ -12,6 +12,7 @@ project(
   ],
 )
 
+
 install = not (meson.is_subproject() and get_option('default_library') == 'static')
 
 # General configuration information

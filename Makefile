@@ -1,17 +1,21 @@
+.EXPORT_ALL_VARIABLES:
+
+CC=/usr/bin/gcc-11
+CXX=/usr/bin/g++-11
+FC=/usr/bin/gfortran-13
+OMP_NUM_THREADS=1
+OMP_SCHEDULE=dynamic
+OMP_MAX_ACTIVE_LEVELS=1
+NVCC_PREPEND_FLAGS=-ccbin=g++-11
+
 # SRC=/home/tornikeo/Documents/personal/forks/QCxMS/src/*.f90
 # PWD=$(shell pwd)
 # GCOV=/usr/bin/gcov-13
 # Disabling openmp a lot faster for some reason
-export CC=/usr/bin/gcc-13
-export FC=/usr/bin/gfortran-13
-export OMP_NUM_THREADS=1
-export OMP_SCHEDULE=dynamic
-export OMP_MAX_ACTIVE_LEVELS=1
 
 default:
-	clear
 	# meson setup builddir -Dc_args='-g3 -pg -g -O0 -w'
-	meson setup builddir -Db_coverage=true -Dbuildtype=debugoptimized -Dc_args='-g3 -pg -g -O0 -w' --wipe
+	meson setup builddir -Db_coverage=true -Dbuildtype=debugoptimized -Dc_args='-g3 -pg -g -O0 -w' --wipe --reconfigure
 	meson compile -C builddir --verbose
 	meson test -C builddir --suite qcxms --verbose -t 0
 coverage:
