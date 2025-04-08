@@ -1,4 +1,0 @@
-[wrap-git]
-directory = tblite-gpu
-url = https://github.com/tornikeo/tblite-gpu.git
-revision = HEAD
