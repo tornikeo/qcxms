@@ -7,11 +7,15 @@
       "request": "launch",
       "program": "${workspaceFolder}/build/qcxms",
       "stopAtEntry": false,
-      "cwd": "${workspaceFolder}/runs/current",
+      "cwd": "${workspaceFolder}/tests/ei_sample_trajectory",
       "environment": [{"name":"OMP_NUM_THREADS", "value": "1"}],
       "externalConsole": false,
       "MIMode": "gdb",
       "setupCommands": [
+        {
+          "text": "source ${workspaceFolder}/.gdbinit",
+          "ignoreFailures": false
+        },
         {
           "description": "Enable pretty-printing for gdb",
           "text": "-enable-pretty-printing",
@@ -34,11 +38,15 @@
         "--prod",
       ],
       "stopAtEntry": false,
-      "cwd": "${workspaceFolder}/runs/current/TMPQCXMS/TMP.1",
+      "cwd": "${workspaceFolder}/tests/ei_sample_trajectory",
       "environment": [{"name":"OMP_NUM_THREADS", "value": "1"}],
       "externalConsole": false,
       "MIMode": "gdb",
       "setupCommands": [
+        {
+          "text": "source ${workspaceFolder}/.gdbinit",
+          "ignoreFailures": false
+        },
         {
           "description": "Enable pretty-printing for gdb",
           "text": "-enable-pretty-printing",
@@ -67,6 +75,10 @@
       "externalConsole": false,
       "MIMode": "gdb",
       "setupCommands": [
+        {
+          "text": "source ${workspaceFolder}/.gdbinit",
+          "ignoreFailures": false
+        },
         {
           "description": "Enable pretty-printing for gdb",
           "text": "-enable-pretty-printing",

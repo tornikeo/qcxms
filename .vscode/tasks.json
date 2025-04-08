@@ -4,14 +4,14 @@
         {
             "label": "mesonSetupBuild",
             "type": "shell",
-            "command": "meson setup build",
+            "command": "meson setup build -Db_coverage=true -Dbuildtype=debug",
             "problemMatcher": [],
             "options": {"cwd": "${workspaceFolder}"}
         },
         {
             "label": "ninjaBuild",
             "type": "shell",
-            "command": "ninja -C build",
+            "command": "meson compile -C build --verbose",
             "options": {"cwd": "${workspaceFolder}"},
             "dependsOn": ["mesonSetupBuild"],
             "problemMatcher": []

@@ -8,11 +8,11 @@
     "fortran.formatting.formatter": "findent",
     "editor.inlineSuggest.enabled": false,
     "mesonbuild.configureOnOpen": true,
-    "C_Cpp.default.compileCommands": "/home/tornikeo/Documents/personal/forks/QCxMS/builddir/compile_commands.json",
+    "C_Cpp.default.compileCommands": "/home/tornikeo/Documents/personal/thesis/qcxms/builddir/compile_commands.json",
     "C_Cpp.default.configurationProvider": "mesonbuild.mesonbuild",
     "coverage-gutters.manualCoverageFilePaths": [
-        "/home/tornikeo/Documents/personal/forks/QCxMS/builddir/meson-logs/coverage.info",
-        "/home/tornikeo/Documents/personal/forks/QCxMS/builddir/meson-logs/coverage.info.raw",
-        "/home/tornikeo/Documents/personal/forks/QCxMS/builddir/meson-logs/coverage.info.run",
+        "/home/tornikeo/Documents/personal/thesis/qcxms/build/meson-logs/coverage.info",
+        "/home/tornikeo/Documents/personal/thesis/qcxms/build/meson-logs/coverage.info.raw",
+        "/home/tornikeo/Documents/personal/thesis/qcxms/build/meson-logs/coverage.info.run",
     ],
 }
