@@ -1,7 +1,7 @@
 .EXPORT_ALL_VARIABLES:
 
-CC=/usr/bin/gcc-11
-CXX=/usr/bin/g++-11
+CC=/usr/bin/gcc-13
+CXX=/usr/bin/g++-13
 FC=/usr/bin/gfortran-13
 OMP_NUM_THREADS=1
 OMP_SCHEDULE=dynamic
@@ -14,28 +14,28 @@ NVCC_PREPEND_FLAGS=-ccbin=g++-11
 # Disabling openmp a lot faster for some reason
 
 default:
-	# meson setup builddir -Dc_args='-g3 -pg -g -O0 -w'
-	meson setup builddir -Db_coverage=true -Dbuildtype=debugoptimized -Dc_args='-g3 -pg -g -O0 -w' --wipe --reconfigure
-	meson compile -C builddir --verbose
-	meson test -C builddir --suite qcxms --verbose -t 0
+	# meson setup build 
+	meson setup build -Db_coverage=true -Dbuildtype=debugoptimized  --wipe --reconfigure -Dc_args='-O0 -w -g3 -pg -g'
+	meson compile -C build --verbose
+	meson test -C build --suite qcxms --verbose -t 0
 coverage:
-	ninja coverage-html -C builddir
-	lcov --extract builddir/meson-logs/coverage.info.raw \
-		--output-file builddir/meson-logs/coverage.info \
+	ninja coverage-html -C build
+	lcov --extract build/meson-logs/coverage.info.raw \
+		--output-file build/meson-logs/coverage.info \
 		--config-file .lcovrc \
 		--ignore-errors unused \
 		**/*.f90
-	genhtml --output-directory builddir/coveragereport \
+	genhtml --output-directory build/coveragereport \
 		--show-details \
 		--legend \
 		--num-spaces 2 \
 		--frames \
 		--branch-coverage \
-		builddir/meson-logs/coverage.info
-	open builddir/coveragereport/index.html
-	gprof builddir/qcxms ./tests/ei_sample_trajectory/gmon.out > builddir/profile.txt
-	gprof2dot builddir/profile.txt | dot -Tpng -o builddir/profiling.png
-	# gprof -l -A builddir/qcxms tests/ei_sample_trajectory/gmon.out > builddir/profile.txt
+		build/meson-logs/coverage.info
+	open build/coveragereport/index.html
+	gprof build/qcxms ./tests/ei_sample_trajectory/gmon.out > build/profile.txt
+	gprof2dot build/profile.txt | dot -Tpng -o build/profiling.png
+	# gprof -l -A build/qcxms tests/ei_sample_trajectory/gmon.out > build/profile.txt
 
 install:
 	git pull --recurse-submodules

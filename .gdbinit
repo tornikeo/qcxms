@@ -30,3 +30,29 @@ except:
   end
   printf "\n"
 end
+
+define print2d
+  printf "[\n"
+  set $rows = size($arg0, 1)
+  set $cols = size($arg0, 2)
+  set $i = 0
+  while $i < $rows
+    printf "  ["
+    set $j = 0
+    while $j < $cols
+      if $j > 0
+        printf ", "
+      end
+      printf "%.6f", *($arg0 + $i * $cols + $j)
+      set $j = $j + 1
+    end
+    printf "]"
+    if $i < $rows - 1
+      printf ",\n"
+    else
+      printf "\n"
+    end
+    set $i = $i + 1
+  end
+  printf "]\n"
+end
