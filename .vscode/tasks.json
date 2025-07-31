@@ -2,19 +2,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "mesonSetupBuild",
-            "type": "shell",
-            "command": "meson setup build -Db_coverage=true -Dbuildtype=debug",
-            "problemMatcher": [],
-            "options": {"cwd": "${workspaceFolder}"}
-        },
-        {
             "label": "ninjaBuild",
             "type": "shell",
-            "command": "meson compile -C build --verbose",
-            "options": {"cwd": "${workspaceFolder}"},
-            "dependsOn": ["mesonSetupBuild"],
-            "problemMatcher": []
+            "command": "meson setup build --buildtype=debugoptimized && meson compile -C build",
         },
         { // make coverage appear automatically
             "label": "Watch coverage on open",

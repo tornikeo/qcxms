@@ -15,7 +15,7 @@ NVCC_PREPEND_FLAGS=-ccbin=g++-11
 
 default:
 	# meson setup build 
-	meson setup build -Db_coverage=true -Dbuildtype=debugoptimized  --wipe --reconfigure -Dc_args='-O0 -w -g3 -pg -g'
+	meson setup build -Db_coverage=true  -Dbuildtype=debugoptimized  --wipe --reconfigure -Dc_args='-O0 -w -g3 -pg -g'
 	meson compile -C build --verbose
 	meson test -C build --suite qcxms --verbose -t 0
 coverage:
@@ -33,7 +33,7 @@ coverage:
 		--branch-coverage \
 		build/meson-logs/coverage.info
 	open build/coveragereport/index.html
-	gprof build/qcxms ./tests/ei_sample_trajectory/gmon.out > build/profile.txt
+	gprof build/qcxms tests/ei_sample_trajectory/TMPQCXMS/TMP.1/gmon.out > build/profile.txt
 	gprof2dot build/profile.txt | dot -Tpng -o build/profiling.png
 	# gprof -l -A build/qcxms tests/ei_sample_trajectory/gmon.out > build/profile.txt
 

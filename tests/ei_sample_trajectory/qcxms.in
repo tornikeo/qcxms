@@ -1,5 +1,5 @@
 xtb2
 ntraj 300
-tmax  0.5
+tmax 30
 tinit 500
 ieeatm 0.6 

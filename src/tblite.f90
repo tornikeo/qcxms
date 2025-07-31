@@ -58,7 +58,7 @@ module qcxms_tblite
    integer, parameter :: stat_unknown_method = 5
 
 contains
-
+  
 !> Entry point for QCxMS to request calculations from the tblite library
    subroutine get_xtb_egrad(num, xyz, charge, multiplicity, method, etemp, &
          & output_file, qat, energy, gradient, stat, spec_calc)

@@ -6,6 +6,7 @@
       "preLaunchTask": "ninjaBuild",
       "request": "launch",
       "program": "${workspaceFolder}/build/qcxms",
+      "args": ["-i", "start.xyz"],
       "stopAtEntry": false,
       "cwd": "${workspaceFolder}/tests/ei_sample_trajectory",
       "environment": [{"name":"OMP_NUM_THREADS", "value": "1"}],
@@ -37,8 +38,8 @@
       "args": [
         "--prod",
       ],
+      "cwd": "${workspaceFolder}/tests/ei_sample_trajectory/TMPQCXMS/TMP.1",
       "stopAtEntry": false,
-      "cwd": "${workspaceFolder}/tests/ei_sample_trajectory",
       "environment": [{"name":"OMP_NUM_THREADS", "value": "1"}],
       "externalConsole": false,
       "MIMode": "gdb",

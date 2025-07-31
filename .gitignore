@@ -39,3 +39,5 @@ build.log
 workdir
 TMP.*/*
 
+tests/*
+subprojects/tblite-gpu.wrap

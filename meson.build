@@ -7,8 +7,8 @@ project(
   license: 'LGPL-3.0-or-later',
   meson_version: '>=0.55',
   default_options: [
-    'buildtype=debug',
-    'default_library=static',
+    'buildtype=debugoptimized',
+    # 'default_library=static',
   ],
 )
 
@@ -46,7 +46,7 @@ qcxms_exe = executable(
   sources: prog,
   dependencies: qcxms_dep,
   install: install,
-  link_args: ['-pg','-lgcov'],
+  # link_args: ['-pg','-lgcov'],
   link_language: 'fortran',
 )
 
@@ -63,10 +63,10 @@ if install
 endif
 
 # Test qcxms in one of the directories
-test('Check output', 
+test('check', 
   qcxms_exe, 
   args: ['--prod'],
   suite: 'qcxms', 
   # timeout: 10,
-  workdir : meson.source_root() + '/tests/ei_sample_trajectory'
+  workdir : meson.source_root() + '/tests/ei_sample_trajectory/TMPQCXMS/TMP.1'
 )

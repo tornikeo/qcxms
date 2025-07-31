@@ -124,7 +124,7 @@ tblite_dep = dependency(
   'tblite',
   version: '>=0.2',
   fallback: ['tblite', 'tblite_dep'],
-  default_options: ['default_library=static', 'api=false'],
+  # default_options: ['default_library=static', 'api=false'],
 )
 exe_deps += tblite_dep
 
